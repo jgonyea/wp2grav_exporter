@@ -4,5 +4,5 @@ streams:
      type: ReadOnlyStream
      prefixes:
        '':
-         - user/themes/drupal-export
+         - user/themes/wordpress-export
          - user/themes/quark

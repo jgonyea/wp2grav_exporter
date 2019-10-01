@@ -1,6 +1,6 @@
-name: Drupal Export
+name: Wordpress Export
 version: 0.1.0
-description: Exported content types from Drupal.
+description: Exported content types from Wordpress.
 icon: outdent
-keywords: drupal, grav, theme
+keywords: wordpress, grav, theme
 license: MIT
