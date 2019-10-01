@@ -1,0 +1,8 @@
+streams:
+ schemes:
+   theme:
+     type: ReadOnlyStream
+     prefixes:
+       '':
+         - user/themes/drupal-export
+         - user/themes/quark
