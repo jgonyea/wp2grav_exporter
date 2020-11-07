@@ -17,6 +17,7 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
     $plugin_dir = plugin_dir_path( __FILE__ );
     // Load plugins.
     require_once ( $plugin_dir . "plugins/wp2grav-all.php" );
+    require_once ( $plugin_dir . "plugins/wp2grav-post_types.php" );
     require_once ( $plugin_dir . "plugins/wp2grav-roles.php" );
     require_once ( $plugin_dir . "plugins/wp2grav-users.php" );
     
@@ -24,6 +25,7 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
     
     // Register commands with wp-cli.
     WP_CLI::add_command( 'wp2grav-all', 'wp2grav_export_all' );
+    WP_CLI::add_command( 'wp2grav-post_types', 'wp2grav_export_post_types' );
     WP_CLI::add_command( 'wp2grav-roles', 'wp2grav_export_roles' );
     WP_CLI::add_command( 'wp2grav-users', 'wp2grav_export_users' );
 }
@@ -109,3 +111,13 @@ function connect_fs($url, $method, $context, $fields = null)
 
   return true;
 }
+
+function random_str( $length = 16 ) {
+    $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    $charactersLength = strlen($characters);
+    $randomString = '';
+    for ($i = 0; $i < $length; $i++) {
+        $randomString .= $characters[rand(0, $charactersLength - 1)];
+    }
+    return $randomString;
+  }
