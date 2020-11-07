@@ -1,7 +1,11 @@
 {
     "require": {
-        "league/html-to-markdown": "^4.6",
-        "symfony/yaml": "^3.4"
-    }
+        "symfony/yaml": "^5.1",
+        "league/html-to-markdown": "^4.10"
+    },
+    "require-dev": {
+        "dealerdirect/phpcodesniffer-composer-installer": "*",
+        "wp-coding-standards/wpcs": "*",
+        "phpcompatibility/phpcompatibility-wp": "*"
+      }
 }
-
