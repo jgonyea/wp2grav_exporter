@@ -2,7 +2,7 @@
 /*
 Plugin Name: Grav Export
 Plugin URI:  https://www.github.com/jgonyea/wp2grav_exporter
-Description: This plugin leverages the WXR export format to generate content for use in a GravCMS instance.
+Description: This plugin converts WP content for use in a GravCMS instance.
 Version:     0.1.0
 Author:      Jeremy Gonyea
 Author URI:  https://gonyea.io
