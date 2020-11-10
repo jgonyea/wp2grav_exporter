@@ -73,7 +73,7 @@ function export_post( $post, $export_folder ) {
 	}
 
 	// ACF plugin meta field data.
-	if (is_plugin_active('advanced-custom-fields')){
+	if ( is_plugin_active( 'advanced-custom-fields/acf.php' ) ) {
 		$acf_fields = get_field_objects( $post->ID );
 		if ( $acf_fields ) {
 			foreach ( $acf_fields as $field_name => $acf_field ) {
