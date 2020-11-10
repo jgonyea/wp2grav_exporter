@@ -123,3 +123,14 @@ function random_str( $length = 16 ) {
     }
     return $randomString;
   }
+
+/**
+ * Finds all posts of a post_type.
+ *  This is used to find all posts of a certain post type.  The built-in function of get_post doesn't find drafts/ scheduled.
+ */
+function wp2grav_find_posts( $type = 'post' ) {
+	global $wpdb;
+	$query = "SELECT * FROM {$wpdb->prefix}posts where `post_type` = '" . $type . "'";
+	$posts = $wpdb->get_results( $query, OBJECT, );
+	return $posts;
+}

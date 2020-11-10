@@ -15,7 +15,7 @@ use League\HTMLToMarkdown\HtmlConverter;
 function wp2grav_export_posts() {
 	WP_CLI::line( WP_CLI::colorize( '%YBeginning posts export%n ' ) );
 	$export_plugins_dir = plugin_dir_path( __FILE__ );
-	$export_folder      = WP_CONTENT_DIR . '/uploads/wp2grav-exports/' . gmdate( 'Ymd' ) . '/';
+	$export_folder      = WP_CONTENT_DIR . '/uploads/wp2grav-exports/user-' . gmdate( 'Ymd' ) . '/';
 
 	$pages_export_folder = $export_folder . 'pages/';
 	$files_export_folder = $export_folder . 'data/wp-content/';
@@ -38,7 +38,7 @@ function wp2grav_export_posts() {
 
 	// Iterate through all post types.
 	foreach ( $post_types as $post_type ) {
-		$posts = find_posts( $post_type );
+		$posts = wp2grav_find_posts( $post_type );
 		// Creates a new progress bar.
 		$progress_type = \WP_CLI\Utils\make_progress_bar( ' |-Generating ' . count( $posts ) . ' Grav pages from post_type: ' . $post_type, count( $posts ), $interval = 100 );
 
@@ -60,17 +60,6 @@ function wp2grav_export_posts() {
 	WP_CLI::success( 'Saved Complete!  ' . count( $posts ) . " posts exported to $pages_export_folder" );
 }
 
-/**
- * Finds all posts of a post_type.
- *  This is used to find all posts of a certain post type.  The built-in function of get_post doesn't find drafts/ scheduled.
- */
-function find_posts( $type = 'post' ) {
-	global $wpdb;
-	$query = "SELECT * FROM {$wpdb->prefix}posts where `post_type` = '" . $type . "'";
-	$posts = $wpdb->get_results( $query, OBJECT, );
-	return $posts;
-}
-
 function export_post( $post, $export_folder ) {
 	$header      = null;
 	$frontmatter = null;
@@ -84,13 +73,15 @@ function export_post( $post, $export_folder ) {
 	}
 
 	// ACF plugin meta field data.
-	$acf_fields = get_field_objects( $post->ID );
-	if ( $acf_fields ) {
-		foreach ( $acf_fields as $field_name => $acf_field ) {
-			unset( $header['wp']['meta'][ $acf_field['name'] ] );
-			unset( $header['wp']['meta'][ '_' . $acf_field['_name'] ] );
-			if ( $acf_field['value'] ) {
-				$header['wp']['meta']['acf'][ $field_name ] = convert_acf_field_data_to_grav( $acf_field, $post, $export_folder );
+	if (is_plugin_active('advanced-custom-fields')){
+		$acf_fields = get_field_objects( $post->ID );
+		if ( $acf_fields ) {
+			foreach ( $acf_fields as $field_name => $acf_field ) {
+				unset( $header['wp']['meta'][ $acf_field['name'] ] );
+				unset( $header['wp']['meta'][ '_' . $acf_field['_name'] ] );
+				if ( $acf_field['value'] ) {
+					$header['wp']['meta']['acf'][ $field_name ] = convert_acf_field_data_to_grav( $acf_field, $post, $export_folder );
+				}
 			}
 		}
 	}
@@ -100,6 +91,11 @@ function export_post( $post, $export_folder ) {
 	$header['title']      = $post->post_title;
 	$header['modified']   = $post->post_modified;
 	$header['date']       = $post->post_date;
+	if ( $post->post_status == "publish" ) {
+		$header['published'] = true;
+	} else {
+		$header['published'] = false;
+	}
 
 	$header['wp']['author_id'] = $post->post_author;
 
@@ -113,6 +109,7 @@ function export_post( $post, $export_folder ) {
 
 	// Replace extranneous WP tags.
 	$frontmatter = str_replace( '<!-- wp:paragraph -->', '', $frontmatter );
+	$frontmatter = str_replace( '<!-- wp:heading -->', '', $frontmatter );
 	if ( substr( $frontmatter, 0, 12 ) === '<html><body>' ) {
 		$frontmatter = substr( $frontmatter, 12 );
 	}

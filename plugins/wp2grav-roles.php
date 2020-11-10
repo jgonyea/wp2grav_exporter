@@ -9,7 +9,7 @@ use Symfony\Component\Yaml\Yaml;
 
 function wp2grav_export_roles( $args, $assoc_args ) {
 	WP_CLI::line( WP_CLI::colorize( '%YBeginning role export%n ' ) );
-	$export_folder = WP_CONTENT_DIR . '/uploads/wp2grav-exports/' . gmdate( 'Ymd' ) . '/config/';
+	$export_folder = WP_CONTENT_DIR . '/uploads/wp2grav-exports/user-' . gmdate( 'Ymd' ) . '/config/';
 
 	$roles    = get_editable_roles();
 	$groups   = array();

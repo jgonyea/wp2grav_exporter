@@ -15,7 +15,7 @@ function wp2grav_export_all( $args, $assoc_args ) {
 		'exit_error' => TRUE,   // Halt script execution on error.
 	);
 
-	// Find all exporter plugins.  Assumes filename is the wp-cli command.
+	// Find all exporter plugins.  Assumes filename is using the wp2grav-* command.
 	$plugin_dir     = plugin_dir_path( __FILE__ );
 	$export_plugins = glob( $plugin_dir . 'wp2grav-*' );
 
