@@ -17,6 +17,7 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
     $plugin_dir = plugin_dir_path( __FILE__ );
     // Load plugins.
     require_once ( $plugin_dir . "plugins/wp2grav-all.php" );
+    require_once ( $plugin_dir . "plugins/wp2grav-posts.php" );
     require_once ( $plugin_dir . "plugins/wp2grav-post_types.php" );
     require_once ( $plugin_dir . "plugins/wp2grav-roles.php" );
     require_once ( $plugin_dir . "plugins/wp2grav-users.php" );
@@ -25,6 +26,7 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
     
     // Register commands with wp-cli.
     WP_CLI::add_command( 'wp2grav-all', 'wp2grav_export_all' );
+    WP_CLI::add_command( 'wp2grav-posts', 'wp2grav_export_posts' );
     WP_CLI::add_command( 'wp2grav-post_types', 'wp2grav_export_post_types' );
     WP_CLI::add_command( 'wp2grav-roles', 'wp2grav_export_roles' );
     WP_CLI::add_command( 'wp2grav-users', 'wp2grav_export_users' );

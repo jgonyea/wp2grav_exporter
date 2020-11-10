@@ -1,7 +1,7 @@
 <?php
 /**
  * WP-CLI custom command: Exports WP post types in GravCMS format.
- * Syntax: wp wp2grav-users
+ * Syntax: wp wp2grav-post_types
  */
 
 use Symfony\Component\Yaml\Yaml;
@@ -16,7 +16,7 @@ function wp2grav_export_post_types() {
 	$export_plugins_dir    = plugin_dir_path( __FILE__ );
 	$export_folder = WP_CONTENT_DIR . '/uploads/wp2grav-exports/' . gmdate( 'Ymd' ) . '/';
 
-	$files_export_folder      = $export_folder . 'data/files/wp-uploads/';
+	$files_export_folder      = $export_folder . 'data/wp-content/uploads/';
 	$theme_export_folder      = $export_folder . 'themes/wordpress-export/';
 	$templates_export_folder  = $export_folder . 'themes/wordpress-export/templates/';
 	$blueprints_export_folder = $export_folder . 'themes/wordpress-export/blueprints/';
@@ -75,7 +75,7 @@ function wp2grav_export_post_types() {
 					  "label" => $field_name,
 					  "type" => "file",
 					  "help" => strip_tags($field['description']) . " | Available file types: " . $field['settings']['file_extensions'],
-					  "destination" => "user/data/files/" . $field['settings']['file_directory'],
+					  "destination" => "user/data/" . $field['settings']['file_directory'],
 					  "accept" => array('image/*'),
 					);
 					if ($field_info['cardinality'] != 1) {
@@ -137,9 +137,6 @@ function wp2grav_export_post_types() {
 	  foreach ($theme_files as $theme_file) {
 		copy($theme_components_files_path . $theme_file, $theme_export_folder . $theme_file);
 	  }
-
-
-
 
 	$progress->finish();
 
