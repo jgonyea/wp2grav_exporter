@@ -86,18 +86,19 @@ function export_post( $post, $export_folder ) {
 		}
 	}
 
-	$header['wp']['ID']   = $post->ID;
-	$header['wp']['guid'] = $post->guid;
+	$header['wp']['post']['ID']   = $post->ID;
+	$header['wp']['post']['guid'] = $post->guid;
 	$header['title']      = $post->post_title;
 	$header['modified']   = $post->post_modified;
 	$header['date']       = $post->post_date;
+	$header['publish_date'] = $post->post_date;
 	if ( $post->post_status == "publish" ) {
 		$header['published'] = true;
 	} else {
 		$header['published'] = false;
 	}
 
-	$header['wp']['author_id'] = $post->post_author;
+	$header['wp']['post']['author_id'] = $post->post_author;
 
 	// Frontmatter.
 	$converter   = new HtmlConverter();
@@ -141,32 +142,36 @@ function convert_acf_field_data_to_grav( $field_data, $post, $export_folder ) {
 			$grav_field['ID'] = $field_data['ID'];
 
 			$base_url                = get_site_url();
-			$file_url                = $field_data['value']['url'];
-			$file_url                = substr( $file_url, strlen( $base_url ) );
-			$file_url                = substr( $file_url, strlen( '/wp-content' ) );
-			$file_name               = $field_data['value']['filename'];
-			$grav_file_subdir        = substr( $file_url, 0, -( strlen( $file_name ) ) );
-			$grav_file_subdir        = substr( $grav_file_subdir, 9 );
-			$absolute_grav_file_path = $export_folder . $files_export_folder . $grav_file_subdir;
+			if ( isset( $field_data['value'] ) && isset( $field_data['value']['url'] ) ){
+				$file_url                = $field_data['value']['url'];
+				$file_url                = substr( $file_url, strlen( $base_url ) );
+				$file_url                = substr( $file_url, strlen( '/wp-content' ) );
+				$file_name               = $field_data['value']['filename'];
+				$grav_file_subdir        = substr( $file_url, 0, -( strlen( $file_name ) ) );
+				$grav_file_subdir        = substr( $grav_file_subdir, 9 );
+				$absolute_grav_file_path = $export_folder . $files_export_folder . $grav_file_subdir;
 
-			// Save image to media export folder.
-			wp_mkdir_p( $absolute_grav_file_path );
-			copy( WP_CONTENT_DIR . $file_url, $absolute_grav_file_path . $file_name );
+				// Save image to media export folder.
+				wp_mkdir_p( $absolute_grav_file_path );
+				copy( WP_CONTENT_DIR . $file_url, $absolute_grav_file_path . $file_name );
 
-			// Page header information and metadata.
-			$grav_field['name'] = $file_name;
-			$grav_field['type'] = $field_data['value']['mime_type'];
-			$grav_field['path'] = 'user/' . $files_export_folder . $grav_file_subdir . $file_name;
-			$grav_field['size'] = $field_data['value']['filesize'];
+				// Page header information and metadata.
+				$grav_field['name'] = $file_name;
+				$grav_field['type'] = $field_data['value']['mime_type'];
+				$grav_field['path'] = 'user/' . $files_export_folder . $grav_file_subdir . $file_name;
+				$grav_field['size'] = $field_data['value']['filesize'];
 
-			$meta_name = $file_name . '.meta.yaml';
-			$alt_text  = $field_data['value']['alt'];
-			if ( $alt_text = '' ) {
-				$alt_text = $file_name;
+				$meta_name = $file_name . '.meta.yaml';
+				$alt_text  = $field_data['value']['alt'];
+				if ( $alt_text = '' ) {
+					$alt_text = $file_name;
+				}
+				$title_text       = $field_data['value']['title'];
+				$metadata_content = "image:\nalt_text: '" . $alt_text . "'\ntitle_text: '" . $title_text . "'\n";
+				file_put_contents( $absolute_grav_file_path . $meta_name, $metadata_content );
+			} else {
+				$grav_field = null;
 			}
-			$title_text       = $field_data['value']['title'];
-			$metadata_content = "image:\nalt_text: '" . $alt_text . "'\ntitle_text: '" . $title_text . "'\n";
-			file_put_contents( $absolute_grav_file_path . $meta_name, $metadata_content );
 			break;
 
 		default:
