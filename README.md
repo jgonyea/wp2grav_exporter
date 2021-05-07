@@ -10,7 +10,7 @@ R/W access to `wp-content/uploads` on the Wordpress site.
 ## Installation
 
 1. Download and move this plugin to your Wordpress's `wp-content/plugins` folder.
-2. Run `composer install` within the `wp2grav_exporter` folder to install dependencies.
+2. Run `composer install --no-dev` within the `wp2grav_exporter` folder to install dependencies.
 3. Enable it via `wp plugin activate wp2grav_exporter` or via the admin gui.
 4. Run `wp wp2grav-all` to export all items.  See other options below.
 5. Exported files are located at `WP_ROOT/wp-content/uploads/wp2grav-exports/DATE`
