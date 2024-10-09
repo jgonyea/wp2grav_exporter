@@ -19,8 +19,6 @@ function wp2grav_export_users() {
 		die();
 	}
 
-	$password_length = 16;
-
 	// Find all users.
 	$users = get_users();
 	if ( ! $users ) {
@@ -41,7 +39,10 @@ function wp2grav_export_users() {
 		$account_content['wp']['user_url']     = $user->get( 'user_url' );
 		$account_content['wp']['display_name'] = $user->get( 'display_name' );
 		$account_content['wp']['nickname']     = $user->nickname;
-		$account_content['fullname']           = $user->first_name . ' ' . $user->last_name;
+		$account_content['wp']['description']  = $user->description;
+		$account_content['wp']['first_name']   = $user->first_name;
+		$account_content['wp']['last_name']    = $user->last_name;
+		$account_content['fullname']           = $user->nickname;
 		$account_content['title']              = null;
 		// Default WordPress doesn't have the concept of a disabled user.
 		$account_content['state'] = 'enabled';
@@ -54,7 +55,8 @@ function wp2grav_export_users() {
 		foreach ( $user->roles as $role ) {
 			$account_content['groups'][] = 'wp_' . convert_role_wp_to_grav( $role );
 		}
-		$account_content['password'] = random_str( $password_length );
+		$account_content['groups'][] = 'wp_authenticated_user';
+		$account_content['password'] = wp_generate_password( 16, false, false );
 		$account                     = Yaml::dump( $account_content, 20, 4 );
 		$account                    .= 'login_attempts: {  }';
 		$filename                    = convert_username_wp_to_grav( $user );
@@ -63,7 +65,7 @@ function wp2grav_export_users() {
 				throw new Exception( 'Could not save ' . $filename . '.yaml export file' );
 			}
 		} catch ( Exception $e ) {
-				  WP_CLI::error( $e->getMessage(), $exit = true );
+			WP_CLI::error( $e->getMessage(), $exit = true );
 		}
 	}
 	WP_CLI::success( 'Saved Complete!  ' . count( $users ) . " user accounts exported to $export_folder" );

@@ -3,9 +3,9 @@
 Plugin Name: Grav Export
 Plugin URI:  https://www.github.com/jgonyea/wp2grav_exporter
 Description: This plugin converts WP content for use in a GravCMS instance.
-Version:     0.1.0
+Version:     0.1.1
 Author:      Jeremy Gonyea
-Author URI:  https://gonyea.io
+Author URI:  https://www.gonyea.io
 License:     MIT
 License URI: https://mit-license.org/
 
@@ -99,13 +99,13 @@ function convert_username_wp_to_grav($user) {
 function connect_fs($url, $method, $context, $fields = null)
 {
   global $wp_filesystem;
-  if(false === ($credentials = request_filesystem_credentials($url, $method, false, $context, $fields))) 
+  if(false === ($credentials = request_filesystem_credentials($url, $method, false, $context, $fields)))
   {
     return false;
   }
 
   //check if credentials are correct or not.
-  if(!WP_Filesystem($credentials)) 
+  if(!WP_Filesystem($credentials))
   {
     request_filesystem_credentials($url, $method, true, $context);
     return false;
@@ -113,16 +113,6 @@ function connect_fs($url, $method, $context, $fields = null)
 
   return true;
 }
-
-function random_str( $length = 16 ) {
-    $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    $charactersLength = strlen($characters);
-    $randomString = '';
-    for ($i = 0; $i < $length; $i++) {
-        $randomString .= $characters[rand(0, $charactersLength - 1)];
-    }
-    return $randomString;
-  }
 
 /**
  * Finds all posts of a post_type.
