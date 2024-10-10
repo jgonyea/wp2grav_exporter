@@ -1,6 +1,15 @@
 name: Wordpress Export
+slug: wordpress-export
+type: theme
 version: 0.1.0
-description: Exported content types from Wordpress.
+description: Supports exported content from a Wordpress site.
 icon: outdent
-keywords: wordpress, grav, theme
+author:
+  name: Jeremy Gonyea
+  email: jeremy.gonyea@gmail.com
+keywords: grav, theme, wordpress
+
 license: MIT
+
+dependencies:
+  - { name: grav, version: '>=1.6.0' }
