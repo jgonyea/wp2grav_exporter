@@ -1,0 +1,20 @@
+# v0.1.1
+##  10/09/2024
+
+1. [](#new)
+    * ACF image field now exports to Grav page type.
+2. [](#improved)
+    * Built-in wordpress password generator replaces custom one.
+    * Added more user meta fields: first_name, last_name, description,
+    * Grav `Full Name` now follows the preferred name in Wordpress.
+    * PHPCS coding standard cleanups
+3. [](#bugfix)
+     * Exported user locale now defaults to English if another pairing isn't found.
+     * All user roles can now login to the grav admin portal.
+
+
+# v0.1.0
+##  11/06/2020
+
+1. [](#new)
+    * ChangeLog started...
