@@ -46,11 +46,10 @@ function wp2grav_export_users() {
 		$account_content['title']              = null;
 		// Default WordPress doesn't have the concept of a disabled user.
 		$account_content['state'] = 'enabled';
-
-		if ( $user->get( 'language' ) !== null && $user->get( 'language' ) !== 'und' ) {
-			$account_content['language'] = $user->get( 'language' );
+		if ( $user->get( 'language' ) !== null && $user->get( 'language' ) !== '' ) {
+			$account_content['language'] = convert_wp_locale( get_user_locale( $user->id ) );
 		} else {
-			$account_content['language'] = 'en';
+			$account_content['language'] = convert_wp_locale( get_locale() );
 		}
 		foreach ( $user->roles as $role ) {
 			$account_content['groups'][] = 'wp_' . convert_role_wp_to_grav( $role );
@@ -70,4 +69,22 @@ function wp2grav_export_users() {
 	}
 	WP_CLI::success( 'Saved Complete!  ' . count( $users ) . " user accounts exported to $export_folder" );
 	$progress->finish();
+}
+
+/**
+ * Converts WP locale to Grav locale.
+ *
+ * @param string $locale WordPress locale to lookup.
+ * @return string
+ */
+function convert_wp_locale( $locale ) {
+	switch ( $locale ) {
+		case 'en_US':
+			$default_locale = 'en';
+			break;
+		default:
+			$default_locale = 'en';
+	}
+
+	return $default_locale;
 }
