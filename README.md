@@ -14,7 +14,7 @@ R/W access to `wp-content/uploads` on the Wordpress site.
 3. Enable it via `wp plugin activate wp2grav_exporter` or via the admin gui.
 4. Run `wp wp2grav-all` to export all items.  See other options below.
 5. Exported files are located at `WP_ROOT/wp-content/uploads/wp2grav-exports/DATE`
-6. The Grav plugin [https://github.com/david-szabo97/grav-plugin-admin-addon-user-manager](admin-addon-user-manager) is recommended to view and manage users for Grav v1.6 sites.
+6. For Grav v1.6 sites, [https://github.com/david-szabo97/grav-plugin-admin-addon-user-manager](admin-addon-user-manager) is recommended to view and manage users.  This is not required for Grav 1.7+ sites.
 
 ## Notes
 
