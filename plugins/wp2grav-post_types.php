@@ -73,7 +73,7 @@ function wp2grav_export_post_types() {
 		$blueprint           = Yaml::parseFile( $blueprint_component );
 		$blueprint['title']  = $post_type;
 
-		// Reset new_fields;
+		// Reset new_fields.
 		$new_fields     = null;
 		$new_acf_fields = null;
 
@@ -101,23 +101,43 @@ function wp2grav_export_post_types() {
 		// Iterate through fields, porting the WP field to the Grav admin blueprint form fields.
 		foreach ( $post_type_features as $field_type => $value ) {
 			switch ( $field_type ) {
-				case 'comments':
-					// Do nothing for now.
+				case 'author':
+					$new_fields['header.wp.post.author'] = array(
+						'help'  => 'WP Post author',
+						'label' => $field_type,
+						'type'  => 'text',
+					);
 					break;
 
-				case 'revisions':
-					// Do nothing for now.
+				case 'autosave':
+					// Skip autosave field.
+					break;
+
+				case 'comments':
+					// Todo: Process comments.
+					break;
+
+				case 'editor':
+					// Skip editor field.
+					break;
+
+				case 'excerpt':
+					$new_fields['header.wp.post.excerpt'] = array(
+						'help'  => 'WP Post excerpt',
+						'label' => $field_type,
+						'type'  => 'text',
+					);
 					break;
 
 				case 'image':
 					$new_fields[ 'header.' . $field_name ] = array(
 						'label'       => $field_name,
 						'type'        => 'file',
-						'help'        => strip_tags( $field['description'] ) . ' | Available file types: ' . $field['settings']['file_extensions'],
+						'help'        => wp_strip_all_tags( $field['description'] ) . ' | Available file types: ' . $field['settings']['file_extensions'],
 						'destination' => 'user/data/' . $field['settings']['file_directory'],
 						'accept'      => array( 'image/*' ),
 					);
-					if ( $field_info['cardinality'] != 1 ) {
+					if ( 1 !== $field_info['cardinality'] ) {
 						$new_fields[ 'header.' . $field_name ]['multiple'] = true;
 					} else {
 						$new_fields[ 'header.' . $field_name ]['multiple'] = false;
@@ -135,6 +155,18 @@ function wp2grav_export_post_types() {
 					foreach ( $extensions as $extension ) {
 						$new_fields[ 'header.' . $field_name ]['accept'][] = $extension;
 					}
+					break;
+
+				case 'revisions':
+					// Grav doesn't really have a concept of revisions. Skip for now.
+					break;
+
+				case 'title':
+					$new_fields['header.title'] = array(
+						'help'  => 'Page Title',
+						'label' => 'Title',
+						'type'  => 'text',
+					);
 					break;
 
 				default:
@@ -177,10 +209,8 @@ function wp2grav_export_post_types() {
 /**
  * Converts an advanced-custom-fields to a Grav's admin form field.
  *
- * @param array   $acf_field
- *   acf field.
- * @param WP_Post $post
- *   WordPress post.
+ * @param array   $acf_field Advanced Custom Field.
+ * @param WP_Post $post WordPress post.
  * @return array
  *   Converted field data.
  */
@@ -196,6 +226,16 @@ function convert_acf_field_data_to_grav_admin( $acf_field, $post ) {
 			);
 			break;
 
+		case 'image':
+			$grav_field = array(
+				'type'           => 'filepicker',
+				'folder'         => 'user://data/wp-content/upload',
+				'label'          => $acf_field['label'],
+				'preview_images' => true,
+				'accept'         => array( 'image/*' ),
+			);
+			break;
+
 		case 'range':
 			$grav_field                     = array(
 				'help'  => $acf_field['instructions'],
@@ -208,14 +248,13 @@ function convert_acf_field_data_to_grav_admin( $acf_field, $post ) {
 
 			break;
 
-		// default:
-			// $grav_field['error'] = 'Missing field definition: ' . $acf_field['type'];
-			// $grav_field['debug']  = $acf_field;
-
+		default:
+			$grav_field['error'] = 'Missing field definition: ' . $acf_field['type'];
+			$grav_field['debug'] = $acf_field;
 	}
 
 	// Generic field options.
-	if ( $acf_field['required'] == '1' ) {
+	if ( 1 === $acf_field['required'] ) {
 		$grav_field['validate']['required'] = true;
 	} else {
 		$grav_field['validate']['required'] = false;
