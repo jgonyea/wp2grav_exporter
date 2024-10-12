@@ -18,7 +18,7 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
 	// Load plugins.
 	require_once $plugin_dir . 'plugins/wp2grav-all.php';
 	require_once $plugin_dir . 'plugins/wp2grav-posts.php';
-	require_once $plugin_dir . 'plugins/wp2grav-post_types.php';
+	require_once $plugin_dir . 'plugins/wp2grav-post-types.php';
 	require_once $plugin_dir . 'plugins/wp2grav-roles.php';
 	require_once $plugin_dir . 'plugins/wp2grav-users.php';
 
