@@ -46,7 +46,7 @@ function wp2grav_export_posts( $args, $assoc_args )  {
 		// Iterate through posts of post_type.
 		foreach ( $posts as $post ) {
 			$progress_type->tick();
-			if ( ! $post->post_name || $post->post_status == 'trash') {
+			if ( ! $post->post_name ) {
 				continue;
 			}
 			$page_output = export_post( get_post( $post->ID ), $export_folder );
