@@ -162,17 +162,6 @@ function render_post( $post, $export_dir ) {
 	$header['wp']['post']['author']  = get_the_author_meta( 'display_name', $post->post_author );
 	$header['wp']['post']['excerpt'] = $post->post_excerpt;
 
-	// Grav taxonomy.
-	$categories = get_the_category( $post->ID );
-	foreach ( $categories as $category ) {
-		$header['taxonomy']['category'][] = $category->name;
-	}
-
-	$tags = wp_get_post_tags( $post->ID );
-	foreach ( $tags as $tag ) {
-		$header['taxonomy']['tag'][] = $tag->name;
-	}
-
 	// Initial Frontmatter conversion.
 	$converter   = new HtmlConverter();
 	$converter->getConfig()->setOption('hard_break', true);
