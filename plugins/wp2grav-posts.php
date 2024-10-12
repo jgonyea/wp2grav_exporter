@@ -173,9 +173,10 @@ function render_post( $post, $export_dir ) {
 		$header['taxonomy']['tag'][] = $tag->name;
 	}
 
-	// Frontmatter.
+	// Initial Frontmatter conversion.
 	$converter   = new HtmlConverter();
-	$html        = get_the_content( null, false, $post->ID );
+	$converter->getConfig()->setOption('hard_break', true);
+	$html = apply_filters('the_content', get_post_field('post_content', $post->ID));
 	$frontmatter = $converter->convert( $html );
 
 	// Copy featured image.

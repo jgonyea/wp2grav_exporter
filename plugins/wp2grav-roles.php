@@ -45,8 +45,8 @@ function wp2grav_export_roles( $args, $assoc_args ) {
 	// Create new role of authenticated user that will grant basic admin login to all exported users.
 	if ( ! array_key_exists( 'wp_authenticated_user', $groups ) ) {
 		$groups['wp_authenticated_user']['icon']                     = 'cog';
-		$groups['wp_authenticated_user']['readableName']             = convert_role_wp_to_grav( $role['name'] );
-		$groups['wp_authenticated_user']['description']              = 'Grant WordPress roles login rights to admin portal';
+		$groups['wp_authenticated_user']['readableName']             = convert_role_wp_to_grav( "Authenticated User" );
+		$groups['wp_authenticated_user']['description']              = 'Grants all WordPress roles login rights to admin portal';
 		$groups['wp_authenticated_user']['access']['admin']['login'] = true;
 	}
 
