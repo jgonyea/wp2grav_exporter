@@ -9,10 +9,11 @@ use League\HTMLToMarkdown\HtmlConverter;
 
 /**
  * Exports WP user content as GravCMS account yaml files.
- *
- * @throws Exception
+ * @param array $args CLI arguments.
+ * @param array $assoc_args Associated CLI arguments.
+ * @throws Exception Error if output folder isn't writeable.
  */
-function wp2grav_export_posts() {
+function wp2grav_export_posts( $args, $assoc_args )  {
 	WP_CLI::line( WP_CLI::colorize( '%YBeginning posts export%n ' ) );
 	$export_plugins_dir = plugin_dir_path( __FILE__ );
 	$export_folder      = WP_CONTENT_DIR . '/uploads/wp2grav-exports/user-' . gmdate( 'Ymd' ) . '/';
@@ -29,23 +30,23 @@ function wp2grav_export_posts() {
 	}
 
 	// Find all custom post_types.
-	$args = array(
+	$type_search_args = array(
 		'public' => true,
 	);
 
-	$post_types = get_post_types( $args );
+	$post_types = get_post_types( $type_search_args );
 	unset( $post_types['attachment'] );
 
 	// Iterate through all post types.
 	foreach ( $post_types as $post_type ) {
 		$posts = wp2grav_find_posts( $post_type );
 		// Creates a new progress bar.
-		$progress_type = \WP_CLI\Utils\make_progress_bar( ' |-Generating ' . count( $posts ) . ' Grav pages from post_type: ' . $post_type, count( $posts ), $interval = 100 );
+		$progress_type = \WP_CLI\Utils\make_progress_bar( ' |- Generating ' . count( $posts ) . ' Grav pages from post_type "' . $post_type  . '".', count( $posts ), $interval = 100 );
 
 		// Iterate through posts of post_type.
 		foreach ( $posts as $post ) {
 			$progress_type->tick();
-			if ( ! $post->post_name ) {
+			if ( ! $post->post_name || $post->post_status == 'trash') {
 				continue;
 			}
 			$page_output = export_post( get_post( $post->ID ), $export_folder );
@@ -60,6 +61,12 @@ function wp2grav_export_posts() {
 	WP_CLI::success( 'Saved Complete!  ' . count( $posts ) . " posts exported to $pages_export_folder" );
 }
 
+/**
+ * Converts WP post to markdown text.
+ * @param WP_Post $post WP page
+ * @param string $export_folder Destination folder
+ * @return string Converted page
+ */
 function export_post( $post, $export_folder ) {
 	$header      = null;
 	$frontmatter = null;
@@ -67,10 +74,7 @@ function export_post( $post, $export_folder ) {
 
 	// Configure export directories.
 	$pages_export_folder = $export_folder . 'pages/';
-	$files_export_folder = 'data/wp-content/uploads/';
 	wp_mkdir_p( $pages_export_folder );
-	wp_mkdir_p( $export_folder . $files_export_folder );
-
 
 
 	// Normal WP meta.
@@ -112,27 +116,6 @@ function export_post( $post, $export_folder ) {
 	$header['wp']['post']['author']    = get_the_author_meta( 'display_name', $post->post_author );
 	$header['wp']['post']['excerpt']   = $post->post_excerpt;
 
-	// Media.
-	$medias = get_attached_media( '', $post->ID );
-	foreach ($medias as $media){
-		$file_url = wp_get_original_image_path( $media->ID );
-		$file_url = substr( $file_url, strlen( WP_CONTENT_DIR ) );
-		$file_url = substr( $file_url, strlen( '/uploads/' ) );
-
-		//$file_name               = $field_data['value']['filename'];
-		//$grav_file_subdir        = substr( $file_url, 0, -( strlen( $file_name ) ) );
-		//$grav_file_subdir        = substr( $grav_file_subdir, 9 );
-		//$absolute_grav_file_path = $export_folder . $files_export_folder . $grav_file_subdir;
-
-		//$absolute_grav_file_path = $export_folder . $files_export_folder . $grav_file_subdir;
-
-		$file2 = '';
-		// Copy image to media export folder.
-		//wp_mkdir_p( $absolute_grav_file_path );
-		//copy( WP_CONTENT_DIR . $file_url, $absolute_grav_file_path . $file_name );
-		//$new = "";
-	}
-
 	// Grav taxonomy.
 	$categories = get_the_category( $post->ID );
 	foreach ( $categories as $category ) {
@@ -162,12 +145,38 @@ function export_post( $post, $export_folder ) {
 	$html        = get_the_content( null, false, $post->ID );
 	$frontmatter = $converter->convert( $html );
 
-	// Replace any media upload URLs with new one.
-	$frontmatter = str_replace( $base_url . 'wp-content/uploads', 'user/data/wp-content/uploads', $frontmatter );
+	// Copy featured image.
+	$featured_image = wp_get_attachment_url(get_post_thumbnail_id($post->ID));
+	if ( $featured_image ) {
+		move_media($featured_image, $export_folder);
+	}
+
+	// Copy attached media.
+	$attached_media = get_attached_media( '', $post->ID );
+	if ( $attached_media ){
+		foreach ($attached_media as $media){
+			$source = wp_get_attachment_image_src($media->ID, 'full');
+			move_media( $source[0], $export_folder );
+		}
+	}
+
+	// Copy in-line images.
+	$images = get_original_images_from_post($post->ID);
+	if ( $images ){
+		foreach ($images as $image){
+			move_media($image['truncated'], $export_folder);
+
+			// Remove image size suffix from image url, and re-apply image size in markdown.
+			$frontmatter = str_replace(  $image['original'], $image['truncated'] . "?resize=" . $image['width'] . "," . $image['height'], $frontmatter );
+		}
+	}
+
+	// Remove base url and convert to Grav data location.
+	$frontmatter = str_replace( $base_url . '/wp-content/uploads', '/user/data/wp-content/uploads', $frontmatter );
 
 	// Replace extranneous WP tags.
-	$frontmatter = str_replace( '<!-- wp:paragraph -->', '', $frontmatter );
-	$frontmatter = str_replace( '<!-- wp:heading -->', '', $frontmatter );
+	$frontmatter = wp_strip_all_tags($frontmatter);
+
 	if ( substr( $frontmatter, 0, 12 ) === '<html><body>' ) {
 		$frontmatter = substr( $frontmatter, 12 );
 	}
@@ -238,4 +247,79 @@ function convert_acf_field_data_to_grav( $field_data, $post, $export_folder ) {
 	};
 
 	return $grav_field;
+}
+
+/**
+ * Moves a referenced WP image from the upload folder to
+ *
+ * @param string $url WP media url.
+ * @param string $export_dir Base directory for exports.
+ * @return void
+ */
+function move_media( $url, $export_dir ){
+	// Source.
+	$upload = wp_get_upload_dir();
+	$file_path = str_replace( $upload['baseurl'], '', $url );
+	$file_path_exploded = explode('/', $file_path);
+	$file_name = $file_path_exploded[ sizeof($file_path_exploded) -1 ];
+
+	// Destination.
+	$export_dir = $export_dir . "data/wp-content/uploads";
+	$grav_file_subdir        = substr( $file_path, 0, -( strlen( $file_name ) ) );
+	$absolute_grav_file_path = $export_dir . $grav_file_subdir;
+	$absolute_grav_file_path = $export_dir . $grav_file_subdir;
+
+	// Copy file.
+	wp_mkdir_p( $absolute_grav_file_path );
+	copy ( WP_CONTENT_DIR . "/uploads" . $file_path, $absolute_grav_file_path . $file_name);
+
+}
+
+
+
+// Function to get original image URLs from a post
+function get_original_images_from_post($post_id) {
+	// Get the post content by post ID
+	$post_content = get_post_field('post_content', $post_id);
+
+	// Regular expression to find all img tags and their src attributes
+	$image_pattern = '/<img[^>]+src="([^">]+)"/i';
+
+	// Store all found images in an array
+	preg_match_all($image_pattern, $post_content, $matches);
+
+	$original_images = array();
+
+	if (!empty($matches[1])) {
+			foreach ($matches[1] as $key => $image_url) {
+					// Check if the image URL contains size suffix like "-300x200"
+					$original_images[$key]['original'] = $image_url;
+
+					// Find sizes, if present.
+					preg_match('/-\d+x\d+(?=\.\w{3,4}$)/', $image_url, $matches);
+					if ( isset($matches[0]) ) {
+						$size_exploded = explode('x', $matches[0]);
+						$original_images[$key]['width'] = substr($size_exploded[0], 1);
+						$original_images[$key]['height'] = $size_exploded[1];
+					}
+
+					// Remove the size suffix
+					$truncated_image_url = preg_replace('/-\d+x\d+(?=\.\w{3,4}$)/', '', $image_url);
+
+					// Use wp_get_attachment_url if the image has an ID
+					$attachment_id = attachment_url_to_postid($truncated_image_url);
+
+					if ($attachment_id) {
+							$original_url = wp_get_attachment_url($attachment_id);
+							if ($original_url) {
+									$original_images[$key]['truncated'] = $original_url;
+							}
+					} else {
+							// If no attachment ID, use the cleaned URL
+							$original_images[$key]['truncated'] = $truncated_image_url;
+					}
+			}
+	}
+
+	return $original_images;
 }
