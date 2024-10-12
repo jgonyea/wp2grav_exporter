@@ -1,3 +1,13 @@
+# v0.2.1
+##  10/12/2024
+
+1. [](#new)
+    * Image media (featured, attached, and in-line) now exports properly!
+2. [](#improved)
+    * Single posts can be exported via `wp wp2grav-posts --id=<ID>
+    * Lots of phpcs fixes across the board.
+
+
 # v0.1.1
 ##  10/09/2024
 

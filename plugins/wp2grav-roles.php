@@ -24,7 +24,7 @@ function wp2grav_export_roles( $args, $assoc_args ) {
 
 	$roles    = get_editable_roles();
 	$groups   = array();
-	$progress = \WP_CLI\Utils\make_progress_bar( 'Generating roles data', count( $roles ), $interval = 100 );
+	$progress = \WP_CLI\Utils\make_progress_bar( ' |- Generating roles data', count( $roles ), $interval = 100 );
 	foreach ( $roles as $key => $role ) {
 		$role_name                                       = 'wp_' . convert_role_wp_to_grav( $key );
 		$groups[ $role_name ]['icon']                    = 'cog';

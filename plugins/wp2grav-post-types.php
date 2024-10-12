@@ -45,11 +45,7 @@ function wp2grav_export_post_types() {
 	}
 
 	// Find all custom post_types.
-	$args = array(
-		'public' => true,
-	);
-
-	$post_types = get_post_types( $args );
+	$post_types = get_post_types( array( 'public' => true ) );
 	unset( $post_types['attachment'] );
 
 	if ( ! $post_types ) {
@@ -57,7 +53,7 @@ function wp2grav_export_post_types() {
 	}
 
 	// Creates a new progress bar.
-	$progress_type = \WP_CLI\Utils\make_progress_bar( ' |-Generating post_type data', count( $post_types ), $interval = 100 );
+	$progress_type = \WP_CLI\Utils\make_progress_bar( ' |- Generating post_type data', count( $post_types ), $interval = 100 );
 
 	// Since WordPress doesn't store its metadata in a consistent manner, we'll have to do some guessing along the way.
 
@@ -65,9 +61,9 @@ function wp2grav_export_post_types() {
 	foreach ( $post_types as $post_type ) {
 		$progress_type->tick();
 		$posts = wp2grav_find_posts( $post_type );
-		// $posts = get_posts();
+
 		// Creates a new progress bar.
-		$progress_posts = \WP_CLI\Utils\make_progress_bar( ' |-Parsing ' . count( $posts ) . ' posts from post_type: ' . $post_type, count( $posts ), $interval = 100 );
+		$progress_posts = \WP_CLI\Utils\make_progress_bar( ' |- Parsing ' . count( $posts ) . ' posts from post_type: ' . $post_type, count( $posts ), $interval = 100 );
 
 		$blueprint_component = dirname( $export_plugins_dir ) . '/grav_components/contentType_blueprint.yaml';
 		$blueprint           = Yaml::parseFile( $blueprint_component );

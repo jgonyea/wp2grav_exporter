@@ -26,7 +26,7 @@ function wp2grav_export_users() {
 	}
 
 	// Creates a new progress bar.
-	$progress = \WP_CLI\Utils\make_progress_bar( 'Generating users data', count( $users ), $interval = 100 );
+	$progress = \WP_CLI\Utils\make_progress_bar( ' |- Generating users data', count( $users ), $interval = 100 );
 
 	foreach ( $users as $user ) {
 		$progress->tick();
