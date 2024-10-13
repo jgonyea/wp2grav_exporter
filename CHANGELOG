@@ -1,3 +1,15 @@
+# v0.2.2
+#  10/12/2024
+
+1. [](#new)
+    * `wp2grav-site` now generates a site.yaml in the EXPORT/config directory based on the WP site information.
+2. [](#improved)
+    * Export plugins are now dynamically loaded.  New plugins should be placed in this plugins's plugin folder alongside the other ones.
+      * Example: Filename should be `wp2grav-<EXPORT_TYPE>`, where <EXPORT_TYPE> is hyphenated, and the main php function should be `wp2grav_export_<EXPORT_TYPE>`, underscored.
+3. [](#bugfix)
+     * Issue #11 - Inline media wasn't being processed by Grav image cache generation, so resizing was being ignored.
+     * Taxonomy (Categories/ tags) should no longer export duplicated
+
 # v0.2.1
 ##  10/12/2024
 
