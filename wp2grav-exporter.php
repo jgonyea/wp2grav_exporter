@@ -3,7 +3,7 @@
 Plugin Name: Grav Export
 Plugin URI:  https://www.github.com/jgonyea/wp2grav_exporter
 Description: This plugin converts WP content for use in a GravCMS instance.
-Version:     0.1.1
+Version:     0.2.2
 Author:      Jeremy Gonyea
 Author URI:  https://www.gonyea.io
 License:     MIT
@@ -14,20 +14,25 @@ License URI: https://mit-license.org/
 require 'vendor/autoload.php';
 
 if ( defined( 'WP_CLI' ) && WP_CLI ) {
-	$plugin_dir = plugin_dir_path( __FILE__ );
+	$plugin_dir = plugin_dir_path( __FILE__ ) . 'plugins';
 	// Load plugins.
-	require_once $plugin_dir . 'plugins/wp2grav-all.php';
-	require_once $plugin_dir . 'plugins/wp2grav-posts.php';
-	require_once $plugin_dir . 'plugins/wp2grav-post-types.php';
-	require_once $plugin_dir . 'plugins/wp2grav-roles.php';
-	require_once $plugin_dir . 'plugins/wp2grav-users.php';
 
-	// Register commands with wp-cli.
-	WP_CLI::add_command( 'wp2grav-all', 'wp2grav_export_all' );
-	WP_CLI::add_command( 'wp2grav-posts', 'wp2grav_export_posts' );
-	WP_CLI::add_command( 'wp2grav-post-types', 'wp2grav_export_post_types' );
-	WP_CLI::add_command( 'wp2grav-roles', 'wp2grav_export_roles' );
-	WP_CLI::add_command( 'wp2grav-users', 'wp2grav_export_users' );
+	$files = glob( $plugin_dir . '/wp2grav-*.php' );
+
+	foreach ( $files as $file ) {
+		// PHP require source file.
+		require_once $file;
+
+		// Derive expected function names from filenames.
+		$plugin_name          = substr( $file, strlen( $plugin_dir ) + 1 );
+		$plugin_name          = substr( $plugin_name, 0, -4 );
+		$plugin_name_exploded = explode( '-', $plugin_name );
+		array_shift( $plugin_name_exploded );
+		$plugin_name_imploded = implode( '_', $plugin_name_exploded );
+
+		// Register commands with wp-cli.
+		WP_CLI::add_command( $plugin_name, 'wp2grav_export_' . $plugin_name_imploded );
+	}
 }
 
 /**
