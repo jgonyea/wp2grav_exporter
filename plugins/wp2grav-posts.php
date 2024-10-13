@@ -194,7 +194,7 @@ function render_post( $post, $export_dir ) {
 	}
 
 	// Remove base url and convert to Grav data location.
-	$frontmatter = str_replace( $base_url . '/wp-content/uploads', '/user/data/wp-content/uploads', $frontmatter );
+	$frontmatter = str_replace( $base_url . '/wp-content/uploads', 'user://data/wp-content/uploads', $frontmatter );
 
 	// Replace extranneous WP tags.
 	$frontmatter = wp_strip_all_tags( $frontmatter );
