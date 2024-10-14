@@ -67,7 +67,7 @@ function wp2grav_export_post_types() {
 
 		$blueprint_component = dirname( $export_plugins_dir ) . '/grav_components/contentType_blueprint.yaml';
 		$blueprint           = Yaml::parseFile( $blueprint_component );
-		$blueprint['title']  = $post_type;
+		$blueprint['title']  = 'wp_' . $post_type;
 
 		// Reset new_fields.
 		$new_fields     = null;
@@ -189,11 +189,11 @@ function wp2grav_export_post_types() {
 
 		// Write converted post type blueprint.
 		$yaml_output = Yaml::dump( $blueprint, 20, 4 );
-		file_put_contents( $export_folder . $blueprints_export_folder . $post_type . '.yaml', $yaml_output );
+		file_put_contents( $export_folder . $blueprints_export_folder . 'wp_' . $post_type . '.yaml', $yaml_output );
 
 		// Write default page template.
 		$template_content = "{% extends 'partials/base.html.twig' %}\n\n{% block content %}\n    {{ page.content|raw }}\n{% endblock %}\n";
-		file_put_contents( $export_folder . $templates_export_folder . $post_type . '.html.twig', $template_content );
+		file_put_contents( $export_folder . $templates_export_folder . 'wp_' . $post_type . '.html.twig', $template_content );
 	}
 
 	$progress_type->finish();

@@ -82,15 +82,16 @@ function wp2grav_export_posts( $args, $assoc_args ) {
 function save_post( $post, $page_render, $pages_export_folder ) {
 	if ( 'trash' === $post->post_status ) {
 		$page_folder = $pages_export_folder . 'z_trashed/' . $post->post_name . '/';
+	} elseif ( 'product' === $post->post_type ) {
+		$page_folder = $pages_export_folder . 'products/' . $post->post_name . '/';
 	} else {
 		$page_folder = $pages_export_folder . $post->post_name . '/';
 	}
-
 	// Create directory.
 	wp_mkdir_p( $page_folder );
 
 	// Save content.
-	file_put_contents( $page_folder . $post->post_type . '.md', $page_render );
+	file_put_contents( $page_folder . 'wp_' . $post->post_type . '.md', $page_render );
 }
 
 
