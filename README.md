@@ -22,6 +22,10 @@ R/W access to `wp-content/uploads` on the Wordpress site.
 
 ## Exporting Users from Wordpress
 
+![Wordpress users exported to Grav](images/users.png)
+
+Wordpress users on left exported to Grav on the right.
+
 ### Command
 
 `wp wp2grav-users` will generate Grav user account files.
@@ -38,6 +42,10 @@ R/W access to `wp-content/uploads` on the Wordpress site.
 Copy the `EXPORT/accounts` folder to your `user` directory (e.g. username.yaml files should be placed at `user/accounts`).
 
 ## Exporting User Roles from Wordpress
+
+![Wordpress roles exported to Grav groups](images/roles.png)
+
+Wordpress users with roles on left exported to Grav groups on the right.
 
 ### Command
 
@@ -58,9 +66,14 @@ Wordpress user roles export as Grav groups in a `groups.yaml` file at `config/gr
 Copy the `EXPORT/config` folder to `users/config`.
 
 ## Exporting Post Types from Wordpress
+
+![Exported post types](images/post-types.png)
+
+Wordpress post types are converte to Grav page types, with a pre-pended "WP" in front of each type (highlighted in yellow here).
+
 ### Command
 
-* `wp wp2grav-post_types` will generate a basic Grav theme, along with page types that match the Wordpress post types.
+* `wp wp2grav-post-types` will generate a basic Grav theme, along with page types that match the Wordpress post types.
 
 ### Results
 
@@ -71,6 +84,17 @@ Copy the `EXPORT/config` folder to `users/config`.
 * Change the default theme under the new site's `System` configuration to the `Wordpress Export` theme.
 
 ## Exporting Posts from Wordpress
+
+![Sample page, admin view](images/sample-page-admin.png)
+
+Admin view of Wordpress "Sample Page" on left exported to Grav markdown on the right.
+
+
+![Sample page, page view](images/sample-page-render.png)
+
+User view of Wordpress "Sample Page" on left exported and rendered via Grav on the right.
+
+
 ### Command
 
 * `wp wp2grav-posts` will export all posts.
@@ -84,3 +108,21 @@ Copy the `EXPORT/config` folder to `users/config`.
 
 * Copy the `EXPORT/pages` folder to your `user` directory
 * Copy the `EXPORT/data` folder to your `user` directory
+
+## Exporting Site metadata from Wordpress
+
+![Sample page, admin view](images/site-metadata.png)
+
+Admin view of WordPress General Settings on left exported to Grav Site Config on the right.
+
+### Command
+
+* `wp wp2grav-site` will export site metadata.
+
+### Results
+
+* Grav site metadata is stored in `EXPORT/config/site.yaml`.
+
+### Importing Post Types to Grav
+
+* Copy the `EXPORT/config/site.yaml` folder to Grav at `user/config/site.yaml`.
