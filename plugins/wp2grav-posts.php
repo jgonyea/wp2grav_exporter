@@ -136,7 +136,7 @@ function render_post( $post, $export_dir ) {
 	$header['wp']['post']['guid'] = $post->guid;
 	$header['title']              = $post->post_title;
 	$header['modified']           = $post->post_modified;
-	$header['date']               = get_the_modified_date( $post->ID );
+	$header['date']               = get_the_modified_date( 'd-m-Y', $post->ID );
 	if ( 'publish' === $post->post_status ) {
 		$header['publish_date'] = $post->post_date;
 		$header['published']    = true;
