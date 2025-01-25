@@ -1,15 +1,31 @@
-name: Wordpress Export
-slug: wordpress-export
-type: theme
-version: 0.1.0
-description: Supports exported content from a Wordpress site.
-icon: outdent
+name: Wordpress Exporter Helper
+slug: wordpress-exporter-helper
+type: plugin
+version: 0.2.2
+description: Companion plugin for Wordpress plugin `wp2grav`
+icon: plug
 author:
   name: Jeremy Gonyea
   email: jeremy.gonyea@gmail.com
-keywords: grav, theme, wordpress
-
+homepage: https://github.com/jgonyea/grav-plugin-wordpress-exporter-helper
+keywords: grav, plugin, wordpress
+bugs: https://github.com/jgonyea/grav-plugin-wordpress-exporter-helper/issues
+docs: https://github.com/jgonyea/grav-plugin-wordpress-exporter-helper/blob/develop/README.md
 license: MIT
 
 dependencies:
-  - { name: grav, version: '>=1.6.0' }
+  - { name: grav, version: '>=1.7.0' }
+
+form:
+  validation: loose
+  fields:
+    enabled:
+      type: toggle
+      label: PLUGIN_ADMIN.PLUGIN_STATUS
+      highlight: 1
+      default: 0
+      options:
+        1: PLUGIN_ADMIN.ENABLED
+        0: PLUGIN_ADMIN.DISABLED
+      validate:
+        type: bool
