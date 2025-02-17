@@ -20,5 +20,9 @@
       "Grav\\Plugin\\WordpressExporterHelper\\": "classes/"
     },
     "classmap":  ["wordpress-exporter-helper.php"]
+  },
+  "scripts": {
+    "post-install-cmd": "cd ../../../ && bin/gpm install feed pagination",
+    "post-update-cmd": "cd ../../../ && bin/gpm install feed pagination"
   }
 }

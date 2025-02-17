@@ -84,6 +84,8 @@ function save_post( $post, $page_render, $pages_export_folder ) {
 		$page_folder = $pages_export_folder . 'z_trashed/' . $post->post_name . '/';
 	} elseif ( 'product' === $post->post_type ) {
 		$page_folder = $pages_export_folder . 'products/' . $post->post_name . '/';
+	} elseif ( 'post' === $post->post_type ) {
+		$page_folder = $pages_export_folder . 'blog/' . $post->post_name . '/';
 	} else {
 		$page_folder = $pages_export_folder . $post->post_name . '/';
 	}
