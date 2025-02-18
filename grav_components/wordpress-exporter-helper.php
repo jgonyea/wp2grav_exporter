@@ -89,8 +89,7 @@ class WordpressExporterHelperPlugin extends Plugin
             if (isset($header->wp)) {
                 if ($header->wp['post']['ID'] == $permalink_query){
                     $new_route = $page->route();
-                    unset($this->grav['page']);
-                    $this->grav['page'] = $page;
+                    header('Location: ' . $new_route);
                 }
             }
         }

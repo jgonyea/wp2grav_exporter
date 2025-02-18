@@ -4,7 +4,7 @@ content:
         - '@self.children'
     limit: 5
     order:
-        by: folder
+        by: header.publish_date
         dir: desc
     pagination: true
     url_taxonomy_filters: true

@@ -91,14 +91,14 @@ function save_post( $post, $page_render, $pages_export_folder ) {
 		case 'post':
 			$page_folder = $pages_export_folder . 'blog/' . $post->post_name . '/';
 
-			// Generate blog.md if not present.
+			// Generate pages/blog/blog.md if not present.
 			$plugin_components_files_path = dirname( plugin_dir_path( __FILE__ ) ) . '/grav_components/';
-			$blog_src                     = $plugin_components_files_path . 'blog.md';
 			$blog_md                      = $pages_export_folder . 'blog/blog.md';
 
 			if ( ! file_exists( $blog_md ) ) {
+				$blog_component = $plugin_components_files_path . 'blog.md';
 				wp_mkdir_p( $pages_export_folder . 'blog' );
-				copy( $blog_src, $blog_md );
+				copy( $blog_component, $blog_md );
 			}
 			break;
 
@@ -114,7 +114,12 @@ function save_post( $post, $page_render, $pages_export_folder ) {
 	wp_mkdir_p( $page_folder );
 
 	// Save content.
-	file_put_contents( $page_folder . 'wp_' . $post->post_type . '.md', $page_render );
+	$output_file = $page_folder . 'wp_' . $post->post_type . '.md';
+	file_put_contents( $output_file, $page_render );
+
+	// Overwrites the file metadata with the last modified timestamp.
+	$mtime = strtotime( $post->post_modified );
+	touch($output_file, $mtime);
 }
 
 

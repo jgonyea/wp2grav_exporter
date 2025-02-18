@@ -1,3 +1,14 @@
+# v0.2.5
+#  02/17/2025
+
+1. [](#new)
+    * WP Meta tab in the admin displays some more fields, including permalink, author, and ID.
+2. [](#improved)
+    * Post content is now generated with the mtime based on last modified timestamp.
+    * Blog now sorts posts according to publish_date by default.
+3. [](#bugfix)
+    * Permalink redirect now changes the browser URL to the full route.
+
 # v0.2.4
 #  02/17/2025
 

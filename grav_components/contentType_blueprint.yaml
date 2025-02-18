@@ -13,3 +13,8 @@ form:
           type: tab
           title: Content
           fields:
+        wp_meta:
+          ordering@: 1
+          type: tab
+          title: WordPress Meta
+          fields:

@@ -71,9 +71,30 @@ function wp2grav_export_post_types() {
 		$blueprint           = Yaml::parseFile( $blueprint_component );
 		$blueprint['title']  = 'wp_' . $post_type;
 
-		// Reset new_fields.
-		$new_fields     = null;
-		$new_acf_fields = null;
+		// Reset new fields.
+		$new_content_fields     = null;
+		$new_wp_fields					= array();
+		$new_acf_fields 				= null;
+
+		// Hardcoded admin form fields.
+		$new_wp_fields["header.wp.meta"] = array(
+				'help'  => $post_type . ' meta field',
+				'label' => 'WP meta data',
+				'type'  => 'array',
+		);
+		$new_wp_fields["header.wp.post.ID"] = array(
+			'help'  => 'Example `http://example.com?p=123`',
+			'label' => 'WP Permalink ID',
+			'type'  => 'text',
+			'disabled' => TRUE
+		);
+		$new_wp_fields["header.wp.post.guid"] = array(
+			'help'  => 'WP GUID',
+			'label' => 'WP GUID',
+			'type'  => 'text',
+			'disabled' => TRUE
+		);
+
 
 		// Iterate through all posts of type post_type, in the event that there are extra metadata fields we want to capture (i.e. ACF fields).
 		foreach ( $posts as $post ) {
@@ -100,10 +121,11 @@ function wp2grav_export_post_types() {
 		foreach ( $post_type_features as $field_type => $value ) {
 			switch ( $field_type ) {
 				case 'author':
-					$new_fields['header.wp.post.author'] = array(
+					$new_wp_fields['header.wp.post.author'] = array(
 						'help'  => 'WP Post author',
 						'label' => $field_type,
 						'type'  => 'array',
+						'disabled' => TRUE,
 					);
 					break;
 
@@ -120,15 +142,15 @@ function wp2grav_export_post_types() {
 					break;
 
 				case 'excerpt':
-					$new_fields['header.wp.post.excerpt'] = array(
-						'help'  => 'WP Post excerpt',
+					$new_wp_fields['header.wp.post.excerpt'] = array(
+						'help'  => 'Manual excerpt from '. $post_type,
 						'label' => $field_type,
 						'type'  => 'text',
 					);
 					break;
 
 				case 'image':
-					$new_fields[ 'header.' . $field_name ] = array(
+					$new_content_fields[ 'header.' . $field_name ] = array(
 						'label'       => $field_name,
 						'type'        => 'file',
 						'help'        => wp_strip_all_tags( $field['description'] ) . ' | Available file types: ' . $field['settings']['file_extensions'],
@@ -136,9 +158,9 @@ function wp2grav_export_post_types() {
 						'accept'      => array( 'image/*' ),
 					);
 					if ( 1 !== $field_info['cardinality'] ) {
-						$new_fields[ 'header.' . $field_name ]['multiple'] = true;
+						$new_content_fields[ 'header.' . $field_name ]['multiple'] = true;
 					} else {
-						$new_fields[ 'header.' . $field_name ]['multiple'] = false;
+						$new_content_fields[ 'header.' . $field_name ]['multiple'] = false;
 					}
 
 					// Hard coding this for now.
@@ -151,25 +173,29 @@ function wp2grav_export_post_types() {
 
 					$extensions = explode( ' ', $image_extensions );
 					foreach ( $extensions as $extension ) {
-						$new_fields[ 'header.' . $field_name ]['accept'][] = $extension;
+						$new_content_fields[ 'header.' . $field_name ]['accept'][] = $extension;
 					}
 					break;
 
 				case 'revisions':
-					// Grav doesn't really have a concept of revisions. Skip for now.
-					break;
+						// Grav doesn't really have a concept of revisions. Skip for now.
+						break;
 
 				case 'title':
-					$new_fields['header.title'] = array(
+					$new_content_fields['header.title'] = array(
 						'help'  => 'Page Title',
 						'label' => 'PLUGIN_ADMIN.TITLE',
 						'type'  => 'text',
 					);
 					break;
 
+				case 'trackbacks':
+					// Legacy feature. Ignore.
+				break;
+
 				default:
 					// Assume a text field.
-					$new_fields[ 'header.' . $field_type ] = array(
+					$new_content_fields[ 'header.' . $field_type ] = array(
 						'help'  => "Help description for $field_type",
 						'label' => $field_type,
 						'type'  => 'text',
@@ -177,15 +203,21 @@ function wp2grav_export_post_types() {
 			}
 		}
 
-		if ( $new_fields ) {
-			$blueprint['form']['fields']['tabs']['fields']['content']['fields'] = $new_fields;
+		if ( $new_content_fields ) {
+			$blueprint['form']['fields']['tabs']['fields']['content']['fields'] = $new_content_fields;
 		}
+
+		if ( $new_wp_fields ) {
+			$blueprint['form']['fields']['tabs']['fields']['wp_meta']['fields'] = $new_wp_fields;
+		}
+
 		if ( $new_acf_fields ) {
 			$blueprint['form']['fields']['tabs']['fields']['acf']['fields'] = $new_acf_fields;
 			$blueprint['form']['fields']['tabs']['fields']['acf']['type']   = 'tab';
 			$blueprint['form']['fields']['tabs']['fields']['acf']['title']  = 'ACF Fields';
 		}
-		if ( ! $new_acf_fields && ! $new_fields ) {
+
+		if ( ! $new_acf_fields && ! $new_content_fields && ! $new_wp_fields ) {
 			unset( $blueprint['form'] );
 		}
 
