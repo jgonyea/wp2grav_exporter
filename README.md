@@ -2,15 +2,16 @@
 
 ## Requirements
 
-PHP v7.1 or above for the composer dependencies.
-WP-CLI
-Working Wordpress 5 site from which content will be exported.
-R/W access to `wp-content/uploads` on the Wordpress site.
+- PHP v7.1 or above for the composer dependencies.
+- WP-CLI installed on the Wordpress host.
+- Working Wordpress site from which content will be exported.
+- R/W access to `wp-content/uploads` on the Wordpress site.
+- Composer installed on the Grav host.
 
 ## Installation
 
-1. Download and move this plugin to your Wordpress's `wp-content/plugins` folder.
-2. Run `composer install --no-dev` within the `wp2grav_exporter` folder to install dependencies.
+1. Download and move this plugin to your Wordpress's `wp-content/plugins` directory.
+2. Run `composer install --no-dev` within the `wp2grav_exporter` directory to install dependencies.
 3. Enable it via `wp plugin activate wp2grav_exporter` or via the admin gui.
 4. Run `wp wp2grav-all` to export all items.  See other options below.
 5. Exported files are located at `WP_ROOT/wp-content/uploads/wp2grav-exports/DATE`
@@ -32,14 +33,14 @@ Wordpress users on left exported to Grav on the right.
 
 ### Results
 
-* User accounts in the export folder under `EXPORT/accounts/`.
+* User accounts in the export directory under `EXPORT/accounts/`.
   * Usernames will be padded to a minimum of 3 characters, maximum of 16.
   * If a username is truncated or padded, the username will also have the Wordpress uid to avoid collisions.
   * Passwords in each account are randomly generated, and have no connection with the respective Wordpress account.  The plaintext password automatically converts to a hashed_password once the account authenticates for the first time.
 
 ### Importing Users to Grav
 
-Copy the `EXPORT/accounts` folder to your `user` directory (e.g. username.yaml files should be placed at `user/accounts`).
+Copy the `EXPORT/accounts` directory to your `user` directory (e.g. username.yaml files should be placed at `user/accounts`).
 
 ## Exporting User Roles from Wordpress
 
@@ -63,7 +64,7 @@ Wordpress user roles export as Grav groups in a `groups.yaml` file at `config/gr
 
 ### Importing User Roles
 
-Copy the `EXPORT/config` folder to `users/config`.
+Copy the `EXPORT/config` directory to `users/config`.
 
 ## Exporting Post Types from Wordpress
 
@@ -73,15 +74,15 @@ Wordpress post types are converte to Grav page types, with a pre-pended "WP" in 
 
 ### Command
 
-* `wp wp2grav-post-types` will generate a basic Grav theme, along with page types that match the Wordpress post types.
+* `wp wp2grav-post-types` will generate a basic Grav plugin, along with page types that match the Wordpress post types.
 
 ### Results
 
-* A stub of a Grav theme will be generated that will present basic
+* A Grav plugin will be generated that will present basic field functionality within the Admin tool.
 
 ### Importing Post Types to Grav
-* Copy the `EXPORT/themes` folder to your `user` directory
-* Change the default theme under the new site's `System` configuration to the `Wordpress Export` theme.
+* Copy the `EXPORT/plugins` directory to your `user` directory
+* Navigate to the Grav plugin directory `user/plugins/wordpress-exporter-helper` and run `composer install`.
 
 ## Exporting Posts from Wordpress
 
@@ -106,8 +107,8 @@ User view of Wordpress "Sample Page" on left exported and rendered via Grav on t
 
 ### Importing Post Types to Grav
 
-* Copy the `EXPORT/pages` folder to your `user` directory
-* Copy the `EXPORT/data` folder to your `user` directory
+* Copy the `EXPORT/pages` directory to your `user` directory
+* Copy the `EXPORT/data` directory to your `user` directory
 
 ## Exporting Site metadata from Wordpress
 
@@ -125,4 +126,5 @@ Admin view of WordPress General Settings on left exported to Grav Site Config on
 
 ### Importing Post Types to Grav
 
-* Copy the `EXPORT/config/site.yaml` folder to Grav at `user/config/site.yaml`.
+* Copy the `EXPORT/config/site.yaml` directory to Grav at `user/config/site.yaml`.
+{% include 'partials/comments.html.twig' with {'page': page} %}
