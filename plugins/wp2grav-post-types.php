@@ -1,6 +1,6 @@
 <?php
 /**
- * WP-CLI custom command: Exports WP post types in for use in a GravCMS theme.
+ * WP-CLI custom command: Exports WP post types in for use in a GravCMS plugin.
  * Syntax: wp wp2grav-post_types
  */
 
@@ -16,9 +16,9 @@ function wp2grav_export_post_types() {
 	$export_plugins_dir = plugin_dir_path( __FILE__ );
 	$export_folder      = WP_CONTENT_DIR . '/uploads/wp2grav-exports/user-' . gmdate( 'Ymd' ) . '/';
 
-	$theme_export_folder      = 'themes/wordpress-export/';
-	$templates_export_folder  = $theme_export_folder . 'templates/';
-	$blueprints_export_folder = $theme_export_folder . 'blueprints/';
+	$plugin_export_folder      = 'plugins/wordpress-exporter-helper/';
+	$templates_export_folder  = $plugin_export_folder . 'templates/';
+	$blueprints_export_folder = $plugin_export_folder . 'blueprints/';
 
 	if ( ! wp_mkdir_p( $export_folder ) ||
 		! wp_mkdir_p( $export_folder . $templates_export_folder ) ||
@@ -28,20 +28,22 @@ function wp2grav_export_post_types() {
 		die();
 	}
 
-	// Write additional static theme component files.
-	$theme_files                 = array(
+	// Write additional static plugin component files.
+	$plugin_files                 = array(
 		'blueprints.yaml',
 		'CHANGELOG.md',
-		'wordpress-export.php',
-		'wordpress-export.yaml',
+		'wordpress-exporter-helper.php',
+		'wordpress-exporter-helper.yaml',
+		'composer.json',
+		'composer.lock',
 		'LICENSE',
 		'README.md',
 		'screenshot.jpg',
 		'thumbnail.jpg',
 	);
-	$theme_components_files_path = dirname( $export_plugins_dir ) . '/grav_components/';
-	foreach ( $theme_files as $theme_file ) {
-		copy( $theme_components_files_path . $theme_file, $export_folder . $theme_export_folder . $theme_file );
+	$plugin_components_files_path = dirname( $export_plugins_dir ) . '/grav_components/';
+	foreach ( $plugin_files as $plugin_file ) {
+		copy( $plugin_components_files_path . $plugin_file, $export_folder . $plugin_export_folder . $plugin_file );
 	}
 
 	// Find all custom post_types.

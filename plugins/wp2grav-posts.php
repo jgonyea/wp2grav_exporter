@@ -25,9 +25,9 @@ function wp2grav_export_posts( $args, $assoc_args ) {
 	$files_export_folder = $export_dir . 'data/wp-content/';
 
 	if (
-		! wp_mkdir_p( $export_dir ) ||
-		! wp_mkdir_p( $pages_export_folder ) ||
-		! wp_mkdir_p( $files_export_folder )
+	! wp_mkdir_p( $export_dir ) ||
+	! wp_mkdir_p( $pages_export_folder ) ||
+	! wp_mkdir_p( $files_export_folder )
 	) {
 		WP_CLI::error( 'Post Types: Could not create export folders ' );
 		die();
@@ -80,13 +80,36 @@ function wp2grav_export_posts( $args, $assoc_args ) {
  * @return void
  */
 function save_post( $post, $page_render, $pages_export_folder ) {
-	if ( 'trash' === $post->post_status ) {
-		$page_folder = $pages_export_folder . 'z_trashed/' . $post->post_name . '/';
-	} elseif ( 'product' === $post->post_type ) {
-		$page_folder = $pages_export_folder . 'products/' . $post->post_name . '/';
-	} else {
-		$page_folder = $pages_export_folder . $post->post_name . '/';
+
+	$page_folder = '';
+
+	switch ( $post->post_type ) {
+		case 'trash':
+			$page_folder = $pages_export_folder . 'z_trashed/' . $post->post_name . '/';
+			break;
+
+		case 'post':
+			$page_folder = $pages_export_folder . 'blog/' . $post->post_name . '/';
+
+			// Generate blog.md if not present.
+			$plugin_components_files_path = dirname( plugin_dir_path( __FILE__ ) ) . '/grav_components/';
+			$blog_src                     = $plugin_components_files_path . 'blog.md';
+			$blog_md                      = $pages_export_folder . 'blog/blog.md';
+
+			if ( ! file_exists( $blog_md ) ) {
+				wp_mkdir_p( $pages_export_folder . 'blog' );
+				copy( $blog_src, $blog_md );
+			}
+			break;
+
+		case 'product':
+			$page_folder = $pages_export_folder . 'products/' . $post->post_name . '/';
+			break;
+
+		default:
+			$page_folder = $pages_export_folder . $post->post_name . '/';
 	}
+
 	// Create directory.
 	wp_mkdir_p( $page_folder );
 
@@ -136,7 +159,7 @@ function render_post( $post, $export_dir ) {
 	$header['wp']['post']['guid'] = $post->guid;
 	$header['title']              = $post->post_title;
 	$header['modified']           = $post->post_modified;
-	$header['date']               = get_the_modified_date( $post->ID );
+	$header['date']               = get_the_modified_date( 'd-m-Y', $post->ID );
 	if ( 'publish' === $post->post_status ) {
 		$header['publish_date'] = $post->post_date;
 		$header['published']    = true;
@@ -146,9 +169,12 @@ function render_post( $post, $export_dir ) {
 	} else {
 		$header['published'] = false;
 	}
-	$header['wp']['post']['author_id'] = $post->post_author;
-	$header['wp']['post']['author']    = get_the_author_meta( 'display_name', $post->post_author );
-	$header['wp']['post']['excerpt']   = $post->post_excerpt;
+
+	$header['wp']['post']['author']['ID']           = $post->post_author;
+	$header['wp']['post']['author']['display_name'] = get_the_author_meta( 'display_name', $post->post_author );
+	$header['wp']['post']['author']['user_login']   = get_the_author_meta( 'user_login', $post->post_author );
+
+	$header['wp']['post']['excerpt'] = $post->post_excerpt;
 
 	// Grav taxonomy.
 	$categories = get_the_category( $post->ID );
@@ -160,13 +186,11 @@ function render_post( $post, $export_dir ) {
 	foreach ( $tags as $tag ) {
 		$header['taxonomy']['tag'][] = $tag->name;
 	}
-	$header['wp']['post']['author']  = get_the_author_meta( 'display_name', $post->post_author );
-	$header['wp']['post']['excerpt'] = $post->post_excerpt;
 
 	// Initial Frontmatter conversion.
-	$converter   = new HtmlConverter();
-	$converter->getConfig()->setOption('hard_break', true);
-	$html = apply_filters('the_content', get_post_field('post_content', $post->ID));
+	$converter = new HtmlConverter();
+	$converter->getConfig()->setOption( 'hard_break', true );
+	$html        = apply_filters( 'the_content', get_post_field( 'post_content', $post->ID ) );
 	$frontmatter = $converter->convert( $html );
 
 	// Copy featured image.
@@ -321,11 +345,11 @@ function get_original_images_from_post( $post_id ) {
 
 	if ( ! empty( $matches[1] ) ) {
 		foreach ( $matches[1] as $key => $image_url ) {
-				// Save original URL.
-				$original_images[ $key ]['original'] = $image_url;
+			// Save original URL.
+			$original_images[ $key ]['original'] = $image_url;
 
-				// Find sizes, if present.
-				preg_match( '/-\d+x\d+(?=\.\w{3,4}$)/', $image_url, $matches );
+			// Find sizes, if present.
+			preg_match( '/-\d+x\d+(?=\.\w{3,4}$)/', $image_url, $matches );
 			if ( isset( $matches[0] ) ) {
 				$size_exploded                     = explode( 'x', $matches[0] );
 				$original_images[ $key ]['width']  = substr( $size_exploded[0], 1 );
@@ -339,13 +363,13 @@ function get_original_images_from_post( $post_id ) {
 			$attachment_id = attachment_url_to_postid( $truncated_image_url );
 
 			if ( $attachment_id ) {
-					$original_url = wp_get_attachment_url( $attachment_id );
+				$original_url = wp_get_attachment_url( $attachment_id );
 				if ( $original_url ) {
-						$original_images[ $key ]['truncated'] = $original_url;
+					$original_images[ $key ]['truncated'] = $original_url;
 				}
 			} else {
-					// If no attachment ID, use the cleaned URL.
-					$original_images[ $key ]['truncated'] = $truncated_image_url;
+				// If no attachment ID, use the cleaned URL.
+				$original_images[ $key ]['truncated'] = $truncated_image_url;
 			}
 		}
 	}

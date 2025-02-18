@@ -1,3 +1,17 @@
+# v0.2.3
+#  02/17/2025
+
+1. [](#new)
+    * Converted the generated theme to a plugin (now called `wordpress-exporter-helper`) so the user can choose alternative themes and not be reliant on the WordPress one for the fields.  New plugin does require running `composer install` after installation in a Grav site to generate required files.
+    * Running `composer install` after installing the generated plugin will auto-install grav plugins `feed` and `pagination`.
+    * Visiting the permalink url on a grav site will automatically redirect to the grav page with the appropriate ID value in its header.  Usage follows the WordPress `?p=123` syntax.
+2. [](#improved)
+    * Added note to run `composer install` during the `wp wp2grav-all` command.
+    * All content of type `post` will be generated under a folder called "blog", which, by default, shows the last 10 posts.
+    * More author data is now exported to page header for use within themes (found under `header->post['author']`).
+3. [](#bugfix)
+    * Removed some double-setting of header values during export.
+
 # v0.2.2
 #  10/12/2024
 

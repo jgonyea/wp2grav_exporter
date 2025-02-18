@@ -25,5 +25,10 @@ function wp2grav_export_all() {
 			WP_CLI::runcommand( $command, $options );
 		}
 	}
-	WP_CLI::line( WP_CLI::colorize( '%GSuccess:%n Completed exporting ' . ( count( $export_plugins ) - 1 ) . ' plugins' ) );
+	WP_CLI::line( WP_CLI::colorize( '%GSuccess:%n Completed ' . ( count( $export_plugins ) - 1 ) . ' exporter plugins' ) );
+
+	$export_dir = WP_CONTENT_DIR . '/uploads/wp2grav-exports/user-' . gmdate( 'Ymd' ) . '/';
+	WP_CLI::line( "Exported content can be found at " . $export_dir );
+	WP_CLI::line( WP_CLI::colorize( '%CNote: After copying the exported content to Grav, you must navigate to the `wordpress-exporter-helper` plugin and run `composer install` %n' ) );
+
 }
