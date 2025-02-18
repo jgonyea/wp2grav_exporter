@@ -55,7 +55,7 @@ function wp2grav_export_post_types() {
 	}
 
 	// Creates a new progress bar.
-	$progress_type = \WP_CLI\Utils\make_progress_bar( ' |- Generating post_type data', count( $post_types ), $interval = 100 );
+	$progress_type = \WP_CLI\Utils\make_progress_bar( ' |- Discovering ' . count( $post_types ) . ' post types', count( $post_types ), $interval = 100 );
 
 	// Since WordPress doesn't store its metadata in a consistent manner, we'll have to do some guessing along the way.
 
