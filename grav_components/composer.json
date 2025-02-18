@@ -22,7 +22,7 @@
     "classmap":  ["wordpress-exporter-helper.php"]
   },
   "scripts": {
-    "post-install-cmd": "cd ../../../ && bin/gpm install feed pagination",
-    "post-update-cmd": "cd ../../../ && bin/gpm install feed pagination"
+    "post-install-cmd": "cd ../../../ && bin/gpm install feed pagination -n",
+    "post-update-cmd": "cd ../../../ && bin/gpm install feed pagination -n"
   }
 }

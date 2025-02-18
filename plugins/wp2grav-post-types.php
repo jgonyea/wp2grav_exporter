@@ -103,7 +103,7 @@ function wp2grav_export_post_types() {
 					$new_fields['header.wp.post.author'] = array(
 						'help'  => 'WP Post author',
 						'label' => $field_type,
-						'type'  => 'text',
+						'type'  => 'array',
 					);
 					break;
 
@@ -162,7 +162,7 @@ function wp2grav_export_post_types() {
 				case 'title':
 					$new_fields['header.title'] = array(
 						'help'  => 'Page Title',
-						'label' => 'Title',
+						'label' => 'PLUGIN_ADMIN.TITLE',
 						'type'  => 'text',
 					);
 					break;

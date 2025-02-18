@@ -44,13 +44,13 @@ function wp2grav_export_users() {
 		$account_content['wp']['last_name']    = $user->last_name;
 		$account_content['fullname']           = $user->nickname;
 		$account_content['title']              = null;
+
 		// Default WordPress doesn't have the concept of a disabled user.
 		$account_content['state'] = 'enabled';
-		if ( $user->get( 'language' ) !== null && $user->get( 'language' ) !== '' ) {
-			$account_content['language'] = convert_wp_locale( get_user_locale( $user->id ) );
-		} else {
-			$account_content['language'] = convert_wp_locale( get_locale() );
-		}
+
+		$user_locale                 = get_user_locale( $user->get( 'ID' ) );
+		$account_content['language'] = convert_wp_locale( $user_locale );
+
 		foreach ( $user->roles as $role ) {
 			$account_content['groups'][] = 'wp_' . convert_role_wp_to_grav( $role );
 		}
@@ -79,11 +79,86 @@ function wp2grav_export_users() {
  */
 function convert_wp_locale( $locale ) {
 	switch ( $locale ) {
-		case 'en_US':
-			$default_locale = 'en';
+		case 'ar':
+			$default_locale = 'ar';
+			break;
+		case 'da_DK':
+			$default_locale = 'da';
+			break;
+		case 'id_ID':
+			$default_locale = 'id';
+			break;
+		case 'ru_RU':
+			$default_locale = 'ru';
+			break;
+		case 'sr_RS':
+			$default_locale = 'sr';
+			break;
+		case 'zh-CN':
+			$default_locale = 'zh-cn';
+			break;
+		case 'zh-HK':
+			$default_locale = 'zh-cn';
+			break;
+		case 'zh-TW':
+			$default_locale = 'zh-tw';
 			break;
 		default:
-			$default_locale = 'en';
+			$substring         = substr( $locale, 0, 2 );
+			$substring_locales = array(
+				'bg',
+				'bn',
+				'br',
+				'ca',
+				'cs',
+				'cy',
+				'da',
+				'de',
+				'de',
+				'el',
+				'en',
+				'eo',
+				'es',
+				'et',
+				'eu',
+				'fa',
+				'fi',
+				'fr',
+				'gl',
+				'he',
+				'hr',
+				'hu',
+				'id',
+				'it',
+				'ja',
+				'km',
+				'ko',
+				'lt',
+				'lv',
+				'mn',
+				'my',
+				'nl',
+				'pl',
+				'pt',
+				'ro',
+				'si',
+				'sk',
+				'sl',
+				'sv',
+				'sw',
+				'th',
+				'tr',
+				'uk',
+				'vi',
+			);
+
+			if ( in_array( $substring, $substring_locales, true ) ) {
+				$default_locale = $substring;
+			} elseif ( 'nn' === $substring ) {
+				$default_locale = 'no';
+			} else {
+				$default_locale = 'en';
+			}
 	}
 
 	return $default_locale;
