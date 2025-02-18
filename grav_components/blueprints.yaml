@@ -1,7 +1,7 @@
 name: Wordpress Exporter Helper
 slug: wordpress-exporter-helper
 type: plugin
-version: 0.2.2
+version: 0.2.3
 description: Companion plugin for Wordpress plugin `wp2grav`
 icon: plug
 author:

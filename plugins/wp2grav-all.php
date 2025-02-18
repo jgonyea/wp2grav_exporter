@@ -30,4 +30,5 @@ function wp2grav_export_all() {
 	$export_dir = WP_CONTENT_DIR . '/uploads/wp2grav-exports/user-' . gmdate( 'Ymd' ) . '/';
 	WP_CLI::line( "Exported content can be found at " . $export_dir );
 	WP_CLI::line( WP_CLI::colorize( '%CNote: After copying the exported content to Grav, you must navigate to the `wordpress-exporter-helper` plugin and run `composer install` %n' ) );
+
 }
