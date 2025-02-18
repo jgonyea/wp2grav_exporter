@@ -1,3 +1,17 @@
+# v0.2.4
+#  02/17/2025
+
+1. [](#new)
+    *
+2. [](#improved)
+    * `composer install` no longer overwrites existing grav plugins.
+    * Wordpress user locales should now match as best as possible to Grav user locales.
+    * Generated plugin blueprint now points to the Wordpress github repo for tracking issues.
+3. [](#bugfix)
+    * Forgot to update generated plugin php code to include permalink redirection.
+    * Author metadata now displays as an array instead of an in-line text field.
+
+
 # v0.2.3
 #  02/17/2025
 

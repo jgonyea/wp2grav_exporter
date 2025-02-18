@@ -52,7 +52,6 @@ class WordpressExporterHelperPlugin extends Plugin
      */
     public function onPluginsInitialized(): void
     {
-        // Don't proceed if we are in the admin plugin
         // If in an Admin page.
         if ($this->isAdmin()) {
             $this->enable([
@@ -61,10 +60,12 @@ class WordpressExporterHelperPlugin extends Plugin
             return;
         }
 
-        // Enable the main events we are interested in
-        $this->enable([
-            // Put your main events here
-        ]);
+        // Wordpress plain permalinks are based on their ID numbers (e.g. `?p=123`).
+        if ($this->grav['uri']->query("p")) {
+            $this->enable([
+                'onPageInitialized' => ['onPageInitialized', 0]
+            ]);
+        }
     }
 
     /**
@@ -74,6 +75,25 @@ class WordpressExporterHelperPlugin extends Plugin
     {
         $types = $event->types;
         $types->scanBlueprints('plugin://' . $this->name . '/blueprints');
+    }
+
+    /**
+     * Redirect user to a page with the correct WordPress permalink data.
+     */
+    public function onPageInitialized(): void
+    {
+        $permalink_query = $this->grav['uri']->query("p");
+        $pages = $this->grav['pages'];
+        foreach ($pages->all() as $page) {
+            $header = $page->header();
+            if (isset($header->wp)) {
+                if ($header->wp['post']['ID'] == $permalink_query){
+                    $new_route = $page->route();
+                    unset($this->grav['page']);
+                    $this->grav['page'] = $page;
+                }
+            }
+        }
     }
 
 }

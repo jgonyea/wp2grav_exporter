@@ -1,20 +1,22 @@
 name: Wordpress Exporter Helper
 slug: wordpress-exporter-helper
 type: plugin
-version: 0.2.3
+version: 0.2.4
 description: Companion plugin for Wordpress plugin `wp2grav`
 icon: plug
 author:
   name: Jeremy Gonyea
   email: jeremy.gonyea@gmail.com
-homepage: https://github.com/jgonyea/grav-plugin-wordpress-exporter-helper
+homepage: https://github.com/jgonyea/wp2grav_exporter
 keywords: grav, plugin, wordpress
-bugs: https://github.com/jgonyea/grav-plugin-wordpress-exporter-helper/issues
-docs: https://github.com/jgonyea/grav-plugin-wordpress-exporter-helper/blob/develop/README.md
+bugs: https://github.com/jgonyea/wp2grav_exporter/issues
+docs: https://github.com/jgonyea/wp2grav_exporter/blob/develop/README.md
 license: MIT
 
 dependencies:
   - { name: grav, version: '>=1.7.0' }
+  - feed
+  - pagination
 
 form:
   validation: loose
