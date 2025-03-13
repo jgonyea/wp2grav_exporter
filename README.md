@@ -127,4 +127,3 @@ Admin view of WordPress General Settings on left exported to Grav Site Config on
 ### Importing Post Types to Grav
 
 * Copy the `EXPORT/config/site.yaml` directory to Grav at `user/config/site.yaml`.
-{% include 'partials/comments.html.twig' with {'page': page} %}
