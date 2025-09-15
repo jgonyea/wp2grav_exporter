@@ -31,10 +31,10 @@ function wp2grav_export_roles( $args, $assoc_args ) {
 		die();
 	}
 
-	$roles    = get_editable_roles();
+	$wp_roles = wp_roles()->roles;
 	$groups   = array();
-	$progress = \WP_CLI\Utils\make_progress_bar( ' |- Generating ' . count( $roles ) . ' user roles', count( $roles ), $interval = 100 );
-	foreach ( $roles as $key => $role ) {
+	$progress = \WP_CLI\Utils\make_progress_bar( ' |- Generating ' . count( $wp_roles ) . ' user roles', count( $wp_roles ), $interval = 100 );
+	foreach ( $wp_roles as $key => $role ) {
 		$role_name                                       = 'wp_' . convert_role_wp_to_grav( $key );
 		$groups[ $role_name ]['icon']                    = 'cog';
 		$groups[ $role_name ]['readableName']            = convert_role_wp_to_grav( $role['name'] );
@@ -72,5 +72,5 @@ function wp2grav_export_roles( $args, $assoc_args ) {
 	} catch ( Exception $e ) {
 		WP_CLI::error( $e->getMessage(), $exit = true );
 	}
-	WP_CLI::success( ( count( $roles ) + 1 ) . ' roles exported' );
+	WP_CLI::success( ( count( $wp_roles ) ) . ' roles exported' );
 }

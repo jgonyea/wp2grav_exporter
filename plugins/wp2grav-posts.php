@@ -333,6 +333,7 @@ function render_post( $post, $export_dir ) {
 	$featured_image = wp_get_attachment_url( get_post_thumbnail_id( $post->ID ) );
 	if ( $featured_image ) {
 		copy_media( $featured_image, $export_dir );
+		
 	}
 
 	// Copy attached media.
