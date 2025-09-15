@@ -2,5 +2,7 @@
 
 {% block content %}
     {{ page.content|raw }}
+    {% if config.plugins['comments-pro']['enabled'] %}
     {% include 'partials/comments-section.html.twig' %}
+    {% endif %}
 {% endblock %}

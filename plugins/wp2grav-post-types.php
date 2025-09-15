@@ -203,8 +203,7 @@ function wp2grav_export_post_types() {
 		$wp_filesystem->put_contents( $export_folder . $blueprints_export_folder . 'wp_' . $post_type . '.yaml', $yaml_output );
 
 		// Write default page template.
-		$template_content = "{% extends 'partials/base.html.twig' %}\n\n{% block content %}\n    {{ page.content|raw }}\n    {% include 'partials/comments-section.html.twig' %}\n{% endblock %}\n";
-		$wp_filesystem->put_contents( $export_folder . $templates_export_folder . 'wp_' . $post_type . '.html.twig', $template_content );
+		copy( $plugin_components_files_path . 'contentType_template.html.twig', $export_folder . $templates_export_folder . 'wp_' . $post_type . '.html.twig' );
 	}
 
 	$progress_type->finish();
