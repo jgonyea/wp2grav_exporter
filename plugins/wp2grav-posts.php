@@ -62,7 +62,33 @@ function wp2grav_export_posts( $args, $assoc_args ) {
 					continue;
 				}
 				$page_output = render_post( get_post( $post->ID ), $export_dir );
-				save_post( $post, $page_output, $pages_export_folder );
+
+				// Iterate through comments of post.
+				$comment_statuses = array(
+					"hold",
+					"approve",
+					"spam",
+					"trash"
+				);
+				$comments = array();
+				foreach ($comment_statuses as $comment_status){
+					$args = array(
+						'post_id' => $post->ID,
+						'status' => $comment_status,
+					);
+					$comments_response = get_comments( $args );
+					foreach ( $comments_response as $comment ) {
+						array_push( $comments, $comment );
+					}
+				}
+
+				if ( $comments ) {
+					$comments_output = render_comments( $post->ID, $export_dir, $comments );
+				} else {
+					$comments_output = null;
+				}
+
+				save_post( $post, $page_output, $comments_output, $pages_export_folder );
 			}
 			$progress_type->finish();
 		}
@@ -79,7 +105,7 @@ function wp2grav_export_posts( $args, $assoc_args ) {
  * @param string  $pages_export_folder Destination directory.
  * @return void
  */
-function save_post( $post, $page_render, $pages_export_folder ) {
+function save_post( $post, $page_render, $comments_render, $pages_export_folder ) {
 
 	$page_folder = '';
 
@@ -115,8 +141,77 @@ function save_post( $post, $page_render, $pages_export_folder ) {
 
 	// Save content.
 	file_put_contents( $page_folder . 'wp_' . $post->post_type . '.md', $page_render );
+
+	if ( $comments_render ) {
+			file_put_contents( $page_folder . 'comments.yaml', $comments_render );
+	}
 }
 
+/**
+ * Converts WP post to yaml markdown text.
+ *
+ * @param int $id WP post ID.
+ * @param string  $export_dir Destination folder.
+ * @param array $comments array of WP_Comment e;ements.
+ * @return string Converted comments.
+ */
+function render_comments ( $id, $export_dir, $comments ) {
+	$new_id = $id;
+	$comments_yaml = array();
+
+	foreach ( $comments as $comment ){
+		switch( $comment->comment_approved ) {
+			case "1":
+				$status = "published";
+				break;
+			case "0":
+				$status = "pending";
+				break;
+			case "spam":
+				$status = "spam";
+				break;
+			case "trash":
+				$status = "deleted";
+			default:
+				$status = "unpublished";
+		}
+
+		if ( $comment->user_id != 0 ) {
+			$user = get_user( $comment->user_id );
+			$user_id = convert_username_wp_to_grav( $user );
+			$user_email = $user->user_email;
+		} else {
+			$user_id = null;
+			$user_email = null;
+		}
+
+		if ( 0 == $comment->comment_parent ){
+			$comment_parent = null;
+		} else {
+			$comment_parent = 'wp-' . $comment->comment_parent;
+		}
+
+		$comment_array = array (
+			"id" => 'wp-' . $comment->comment_ID,
+			"parent_id" => $comment_parent,
+			"author" => $comment->comment_author,
+			"email" => $comment->comment_author_email,
+			"text" => $comment->comment_content,
+			"date" => $comment->comment_date,
+			"last_activity" => "",
+			"status" => $status,
+			"user_agent" => $comment->comment_agent,
+			"spam_score" => 0,
+			"upvotes" => 0,
+			"downvotes" => 0,
+			"user_id" => $comment->user_id,
+			"user_email" => $user_email,
+		);
+		$comments_yaml['comments'][] = $comment_array;
+	}
+
+	return (Yaml::dump( $comments_yaml, 20, 2 ) );
+}
 
 /**
  * Converts WP post to markdown text.
