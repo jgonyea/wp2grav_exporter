@@ -61,7 +61,7 @@ class WordpressExporterHelperPlugin extends Plugin
         }
 
        $this->enable([
-            'onGetPageTemplates' => ['onGetPageTemplates', 0],
+            'onTwigTemplatePaths' => ['onTwigTemplatePaths', 1],
         ]);
 
         // Wordpress plain permalinks are based on their ID numbers (e.g. `?p=123`).
@@ -82,12 +82,11 @@ class WordpressExporterHelperPlugin extends Plugin
     }
 
     /**
-     * Add templates directory.
+     * Add templates directory to twig lookup paths.
      */
-    public function onGetPageTemplates(Event $event): void
+    public function onTwigTemplatePaths()
     {
-        $types = $event->types;
-        $types->scanTemplates('plugin://' . $this->name . '/templates');
+        $this->grav['twig']->twig_paths[] = __DIR__ . '/templates';
     }
 
     /**

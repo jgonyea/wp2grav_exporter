@@ -191,12 +191,16 @@ function render_comments ( $id, $export_dir, $comments ) {
 			$comment_parent = 'wp-' . $comment->comment_parent;
 		}
 
+		$converter = new HtmlConverter();
+		$converter->getConfig()->setOption( 'hard_break', true );
+		$content = $converter->convert( $comment->comment_content );
+
 		$comment_array = array (
 			"id" => 'wp-' . $comment->comment_ID,
 			"parent_id" => $comment_parent,
 			"author" => $comment->comment_author,
 			"email" => $comment->comment_author_email,
-			"text" => $comment->comment_content,
+			"text" => $content,
 			"date" => $comment->comment_date,
 			"last_activity" => "",
 			"status" => $status,
@@ -255,6 +259,11 @@ function render_post( $post, $export_dir ) {
 	$header['title']              = $post->post_title;
 	$header['modified']           = $post->post_modified;
 	$header['date']               = get_the_modified_date( 'd-m-Y', $post->ID );
+	if ( "open" === $post->comment_status ) {
+		$header['comments'] 				= true;
+	} else {
+		$header['comments'] 				= false;
+	}
 	if ( 'publish' === $post->post_status ) {
 		$header['publish_date'] = $post->post_date;
 		$header['published']    = true;
