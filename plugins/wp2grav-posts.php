@@ -39,7 +39,15 @@ function wp2grav_export_posts( $args, $assoc_args ) {
 		WP_CLI::line( 'Exporting post: "' . $post->post_title . '"' );
 		if ( null !== $post ) {
 			$page_output = render_post( get_post( $post->ID ), $export_dir );
-			save_post( $post, $page_output, $pages_export_folder );
+			$comments = find_comments( $post-> ID );
+
+			if ( $comments ) {
+				$comments_output = render_comments( $post->ID, $export_dir, $comments );
+			} else {
+				$comments_output = null;
+			}
+
+			save_post( $post, $page_output, $comments_output, $pages_export_folder );
 			$posts = array( $post );
 		} else {
 			$posts = array();
@@ -63,24 +71,7 @@ function wp2grav_export_posts( $args, $assoc_args ) {
 				}
 				$page_output = render_post( get_post( $post->ID ), $export_dir );
 
-				// Iterate through comments of post.
-				$comment_statuses = array(
-					"hold",
-					"approve",
-					"spam",
-					"trash"
-				);
-				$comments = array();
-				foreach ($comment_statuses as $comment_status){
-					$args = array(
-						'post_id' => $post->ID,
-						'status' => $comment_status,
-					);
-					$comments_response = get_comments( $args );
-					foreach ( $comments_response as $comment ) {
-						array_push( $comments, $comment );
-					}
-				}
+				$comments = find_comments( $post-> ID );
 
 				if ( $comments ) {
 					$comments_output = render_comments( $post->ID, $export_dir, $comments );
@@ -97,6 +88,36 @@ function wp2grav_export_posts( $args, $assoc_args ) {
 	WP_CLI::success( 'Saved Complete!  ' . count( $posts ) . " posts exported to $pages_export_folder" );
 }
 
+
+/**
+ * Finds all comments of a post/ page.
+ *
+ * @param int $id WordPress post ID.
+ * @return array Collection of WP_Comment comments.
+ */
+function find_comments ( $id ):array {
+	$comments = array();
+	// Iterate through comments of post.
+	$comment_statuses = array(
+		"hold",
+		"approve",
+		"spam",
+		"trash"
+	);
+
+	foreach ($comment_statuses as $comment_status){
+		$args = array(
+			'post_id' => $id,
+			'status' => $comment_status,
+		);
+		$comments_response = get_comments( $args );
+		foreach ( $comments_response as $comment ) {
+			array_push( $comments, $comment );
+		}
+	}
+
+	return $comments;
+}
 /**
  * Save rendered markdown to new folder.
  *
