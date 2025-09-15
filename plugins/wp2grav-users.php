@@ -2,16 +2,25 @@
 /**
  * WP-CLI custom command: Exports WP roles in GravCMS format.
  * Syntax: wp wp2grav-users
+ *
+ * @package wp2grav
  */
 
 use Symfony\Component\Yaml\Yaml;
 
+// Prepare to save content.
+if ( ! isset( $wp_filesystem ) ) {
+	require_once ABSPATH . '/wp-admin/includes/file.php';
+	WP_Filesystem();
+}
+
 /**
  * Exports WP user content as GravCMS account yaml files.
  *
- * @throws Exception
+ * @throws Exception Error if export folder unwriteable.
  */
 function wp2grav_export_users() {
+	global $wp_filesystem;
 	WP_CLI::line( WP_CLI::colorize( '%YBeginning user export%n ' ) );
 	$export_folder = WP_CONTENT_DIR . '/uploads/wp2grav-exports/user-' . gmdate( 'Ymd' ) . '/accounts/';
 	if ( ! wp_mkdir_p( $export_folder ) ) {
@@ -60,7 +69,7 @@ function wp2grav_export_users() {
 		$account                    .= 'login_attempts: {  }';
 		$filename                    = convert_username_wp_to_grav( $user );
 		try {
-			if ( ! file_put_contents( $export_folder . $filename . '.yaml', $account ) ) {
+			if ( ! $wp_filesystem->put_contents( $export_folder . $filename . '.yaml', $account ) ) {
 				throw new Exception( 'Could not save ' . $filename . '.yaml export file' );
 			}
 		} catch ( Exception $e ) {
