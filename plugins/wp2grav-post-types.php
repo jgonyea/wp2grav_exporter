@@ -2,21 +2,29 @@
 /**
  * WP-CLI custom command: Exports WP post types in for use in a GravCMS plugin.
  * Syntax: wp wp2grav-post_types
+ *
+ * @package wp2grav
  */
 
 use Symfony\Component\Yaml\Yaml;
 
+// Prepare to save content.
+if ( ! isset( $wp_filesystem ) ) {
+	require_once ABSPATH . '/wp-admin/includes/file.php';
+	WP_Filesystem();
+}
+
 /**
  * Exports WP user content as GravCMS account yaml files.
  *
- * @throws Exception
+ * @throws Exception Error if export folder unwriteable.
  */
 function wp2grav_export_post_types() {
 	WP_CLI::line( WP_CLI::colorize( '%YBeginning post_types export%n ' ) );
 	$export_plugins_dir = plugin_dir_path( __FILE__ );
 	$export_folder      = WP_CONTENT_DIR . '/uploads/wp2grav-exports/user-' . gmdate( 'Ymd' ) . '/';
 
-	$plugin_export_folder      = 'plugins/wordpress-exporter-helper/';
+	$plugin_export_folder     = 'plugins/wordpress-exporter-helper/';
 	$templates_export_folder  = $plugin_export_folder . 'templates/';
 	$blueprints_export_folder = $plugin_export_folder . 'blueprints/';
 
@@ -61,6 +69,7 @@ function wp2grav_export_post_types() {
 
 	// Iterate through all post types.
 	foreach ( $post_types as $post_type ) {
+		global $wp_filesystem;
 		$progress_type->tick();
 		$posts = wp2grav_find_posts( $post_type );
 
@@ -191,11 +200,11 @@ function wp2grav_export_post_types() {
 
 		// Write converted post type blueprint.
 		$yaml_output = Yaml::dump( $blueprint, 20, 4 );
-		file_put_contents( $export_folder . $blueprints_export_folder . 'wp_' . $post_type . '.yaml', $yaml_output );
+		$wp_filesystem->put_contents( $export_folder . $blueprints_export_folder . 'wp_' . $post_type . '.yaml', $yaml_output );
 
 		// Write default page template.
-		$template_content = "{% extends 'partials/base.html.twig' %}\n\n{% block content %}\n    {{ page.content|raw }}\n{% endblock %}\n";
-		file_put_contents( $export_folder . $templates_export_folder . 'wp_' . $post_type . '.html.twig', $template_content );
+		$template_content = "{% extends 'partials/base.html.twig' %}\n\n{% block content %}\n    {{ page.content|raw }}\n    {% include 'partials/comments-section.html.twig' %}\n{% endblock %}\n";
+		$wp_filesystem->put_contents( $export_folder . $templates_export_folder . 'wp_' . $post_type . '.html.twig', $template_content );
 	}
 
 	$progress_type->finish();

@@ -2,10 +2,18 @@
 /**
  * WP-CLI custom command: Exports WP post content in GravCMS format.
  * Syntax: wp wp2grav-posts
+ *
+ * @package wp2grav
  */
 
 use Symfony\Component\Yaml\Yaml;
 use League\HTMLToMarkdown\HtmlConverter;
+
+// Prepare to save content.
+if ( ! isset( $wp_filesystem ) ) {
+	require_once ABSPATH . '/wp-admin/includes/file.php';
+	WP_Filesystem();
+}
 
 /**
  * Exports WP user content as GravCMS account yaml files.
@@ -39,7 +47,15 @@ function wp2grav_export_posts( $args, $assoc_args ) {
 		WP_CLI::line( 'Exporting post: "' . $post->post_title . '"' );
 		if ( null !== $post ) {
 			$page_output = render_post( get_post( $post->ID ), $export_dir );
-			save_post( $post, $page_output, $pages_export_folder );
+			$comments    = find_comments( $post->ID );
+
+			if ( $comments ) {
+				$comments_output = render_comments( $post->ID, $export_dir, $comments );
+			} else {
+				$comments_output = null;
+			}
+
+			save_post( $post, $page_output, $comments_output, $pages_export_folder );
 			$posts = array( $post );
 		} else {
 			$posts = array();
@@ -62,7 +78,16 @@ function wp2grav_export_posts( $args, $assoc_args ) {
 					continue;
 				}
 				$page_output = render_post( get_post( $post->ID ), $export_dir );
-				save_post( $post, $page_output, $pages_export_folder );
+
+				$comments = find_comments( $post->ID );
+
+				if ( $comments ) {
+					$comments_output = render_comments( $post->ID, $export_dir, $comments );
+				} else {
+					$comments_output = null;
+				}
+
+				save_post( $post, $page_output, $comments_output, $pages_export_folder );
 			}
 			$progress_type->finish();
 		}
@@ -71,16 +96,48 @@ function wp2grav_export_posts( $args, $assoc_args ) {
 	WP_CLI::success( 'Saved Complete!  ' . count( $posts ) . " posts exported to $pages_export_folder" );
 }
 
+
+/**
+ * Finds all comments of a post/ page.
+ *
+ * @param int $id WordPress post ID.
+ * @return array Collection of WP_Comment comments.
+ */
+function find_comments( $id ) {
+	$comments = array();
+	// Iterate through comments of post.
+	$comment_statuses = array(
+		'hold',
+		'approve',
+		'spam',
+		'trash',
+	);
+
+	foreach ( $comment_statuses as $comment_status ) {
+		$args              = array(
+			'post_id' => $id,
+			'status'  => $comment_status,
+		);
+		$comments_response = get_comments( $args );
+		foreach ( $comments_response as $comment ) {
+			array_push( $comments, $comment );
+		}
+	}
+
+	return $comments;
+}
+
 /**
  * Save rendered markdown to new folder.
  *
  * @param WP_Post $post WordPress post.
  * @param string  $page_render Markdown content rendered from WordPress Post.
+ * @param string  $comments_render YAML content rendered from WordPress comments.
  * @param string  $pages_export_folder Destination directory.
  * @return void
  */
-function save_post( $post, $page_render, $pages_export_folder ) {
-
+function save_post( $post, $page_render, $comments_render, $pages_export_folder ) {
+	global $wp_filesystem;
 	$page_folder = '';
 
 	switch ( $post->post_type ) {
@@ -114,9 +171,83 @@ function save_post( $post, $page_render, $pages_export_folder ) {
 	wp_mkdir_p( $page_folder );
 
 	// Save content.
-	file_put_contents( $page_folder . 'wp_' . $post->post_type . '.md', $page_render );
+	$wp_filesystem->put_contents( $page_folder . 'wp_' . $post->post_type . '.md', $page_render );
+
+	if ( $comments_render ) {
+			$wp_filesystem->put_contents( $page_folder . 'comments.yaml', $comments_render );
+	}
 }
 
+/**
+ * Converts WP post to yaml markdown text.
+ *
+ * @param int    $id WP post ID.
+ * @param string $export_dir Destination folder.
+ * @param array  $comments array of WP_Comment e;ements.
+ * @return string Converted comments.
+ */
+function render_comments( $id, $export_dir, $comments ) {
+	$new_id        = $id;
+	$comments_yaml = array();
+
+	foreach ( $comments as $comment ) {
+		switch ( $comment->comment_approved ) {
+			case '1':
+				$status = 'published';
+				break;
+			case '0':
+				$status = 'pending';
+				break;
+			case 'spam':
+				$status = 'spam';
+				break;
+			case 'trash':
+				$status = 'deleted';
+				break;
+			default:
+				$status = 'unpublished';
+		}
+
+		if ( '0' !== $comment->user_id ) {
+			$user       = get_user( $comment->user_id );
+			$user_id    = convert_username_wp_to_grav( $user );
+			$user_email = $user->user_email;
+		} else {
+			$user_id    = null;
+			$user_email = null;
+		}
+
+		if ( '0' === $comment->comment_parent ) {
+			$comment_parent = null;
+		} else {
+			$comment_parent = 'wp-' . $comment->comment_parent;
+		}
+
+		$converter = new HtmlConverter();
+		$converter->getConfig()->setOption( 'hard_break', true );
+		$content = $converter->convert( $comment->comment_content );
+
+		$comment_array               = array(
+			'id'            => 'wp-' . $comment->comment_ID,
+			'parent_id'     => $comment_parent,
+			'author'        => $comment->comment_author,
+			'email'         => $comment->comment_author_email,
+			'text'          => $content,
+			'date'          => $comment->comment_date,
+			'last_activity' => '',
+			'status'        => $status,
+			'user_agent'    => $comment->comment_agent,
+			'spam_score'    => 0,
+			'upvotes'       => 0,
+			'downvotes'     => 0,
+			'user_id'       => $comment->user_id,
+			'user_email'    => $user_email,
+		);
+		$comments_yaml['comments'][] = $comment_array;
+	}
+
+	return ( Yaml::dump( $comments_yaml, 20, 2 ) );
+}
 
 /**
  * Converts WP post to markdown text.
@@ -160,6 +291,11 @@ function render_post( $post, $export_dir ) {
 	$header['title']              = $post->post_title;
 	$header['modified']           = $post->post_modified;
 	$header['date']               = get_the_modified_date( 'd-m-Y', $post->ID );
+	if ( 'open' === $post->comment_status ) {
+		$header['comments'] = true;
+	} else {
+		$header['comments'] = false;
+	}
 	if ( 'publish' === $post->post_status ) {
 		$header['publish_date'] = $post->post_date;
 		$header['published']    = true;
@@ -242,6 +378,7 @@ function render_post( $post, $export_dir ) {
  * @param string  $export_dir Data export directory.
  */
 function convert_acf_field_data_to_grav( $field_data, $post, $export_dir ) {
+	global $wp_filesystem;
 	$pages_export_folder = $export_dir . 'pages/';
 	$files_export_folder = 'data/wp-content/uploads/';
 	wp_mkdir_p( $pages_export_folder );
@@ -289,7 +426,9 @@ function convert_acf_field_data_to_grav( $field_data, $post, $export_dir ) {
 				}
 				$title_text       = $field_data['value']['title'];
 				$metadata_content = "image:\nalt_text: '" . $alt_text . "'\ntitle_text: '" . $title_text . "'\n";
-				file_put_contents( $absolute_grav_file_path . $meta_name, $metadata_content );
+
+				// Save content.
+				$wp_filesystem->put_contents( $absolute_grav_file_path . $meta_name, $metadata_content );
 			} else {
 				$grav_field = null;
 			}

@@ -2,6 +2,12 @@
 /**
  * WP-CLI custom command: Exports WP content in GravCMS format by enumerating all plugins found under the `plugins` directory.
  * Syntax: wp wp2grav-all
+ *
+ * @package wp2grav
+ */
+
+/**
+ * Exports all wp2grav plugins found in plugins directory.
  */
 function wp2grav_export_all() {
 	WP_CLI::line( 'Exporting all available content' );

@@ -52,13 +52,17 @@ class WordpressExporterHelperPlugin extends Plugin
      */
     public function onPluginsInitialized(): void
     {
-        // If in an Admin page.
-        if ($this->isAdmin()) {
+        // Don't proceed if we are in the admin plugin.
+        if ( $this->isAdmin()) {
             $this->enable([
-                'onGetPageTemplates' => ['onGetPageTemplates', 0],
+                'onGetPageBlueprints' => ['onGetPageBlueprints', 0],
             ]);
             return;
         }
+
+       $this->enable([
+            'onTwigTemplatePaths' => ['onTwigTemplatePaths', 1],
+        ]);
 
         // Wordpress plain permalinks are based on their ID numbers (e.g. `?p=123`).
         if ($this->grav['uri']->query("p")) {
@@ -71,10 +75,18 @@ class WordpressExporterHelperPlugin extends Plugin
     /**
      * Add blueprint directory.
      */
-    public function onGetPageTemplates(Event $event): void
+    public function onGetPageBlueprints(Event $event): void
     {
         $types = $event->types;
         $types->scanBlueprints('plugin://' . $this->name . '/blueprints');
+    }
+
+    /**
+     * Add templates directory to twig lookup paths.
+     */
+    public function onTwigTemplatePaths()
+    {
+        $this->grav['twig']->twig_paths[] = __DIR__ . '/templates';
     }
 
     /**
@@ -95,5 +107,4 @@ class WordpressExporterHelperPlugin extends Plugin
             }
         }
     }
-
 }
