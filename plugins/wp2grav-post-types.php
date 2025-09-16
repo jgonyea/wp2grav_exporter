@@ -121,7 +121,18 @@ function wp2grav_export_post_types() {
 					break;
 
 				case 'comments':
-					// Todo: Process comments.
+					$new_fields['header.comments'] = array(
+						'help' => 'Requires Comments Pro plugin to render properly',
+						'label' => 'Comments',
+						'type'	=> 'toggle',
+						'highlight' => 1,
+						'default' => 1,
+						'options' => array(
+							'1' => 'PLUGIN_ADMIN.ENABLED',
+							'0' => 'PLUGIN_ADMIN.DISABLED'
+						),
+						'validate' => array( 'type' => 'bool' ),
+					);
 					break;
 
 				case 'editor':
