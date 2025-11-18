@@ -13,5 +13,11 @@
 		<testsuite name="conversions">
 			<directory prefix="Convert" suffix=".php">./tests/Unit</directory>
 		</testsuite>
+        <testsuite name="utility">
+            <directory prefix="WPGrav" suffix=".php">./tests/Unit</directory>
+        </testsuite>
+        <testsuite name="unit">
+            <directory prefix="" suffix="Test.php">./tests/Unit</directory>
+        </testsuite>
 	</testsuites>
 </phpunit>

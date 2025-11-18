@@ -15,7 +15,7 @@ class ConvertUsernameTest extends WP_UnitTestCase {
 	/**
 	 * A single example test.
 	 */
-	    public function testConvertUsernameJohn_Doe() {
+	    public function testConvertUsername_John_Doe() {
         // Create a mock WP_User object for testing
 
         $args = array(
@@ -27,7 +27,7 @@ class ConvertUsernameTest extends WP_UnitTestCase {
         $this->assertEquals('john_doe', convert_username_wp_to_grav($user));
     }
 
-    public function testConvertUsernameJohn__Doe() {
+    public function testConvertUsername_John__Doe() {
         // Create a mock WP_User object for testing
 
         $args = array(
@@ -39,7 +39,7 @@ class ConvertUsernameTest extends WP_UnitTestCase {
         $this->assertEquals('john_doe', convert_username_wp_to_grav($user));
     }
 
-    public function testConvertUsernameJohnsDoe() {
+    public function testConvertUsername_JohnsDoe() {
         // Create a mock WP_User object for testing
 
         $args = array(
@@ -51,7 +51,7 @@ class ConvertUsernameTest extends WP_UnitTestCase {
         $this->assertEquals('johns_doe', convert_username_wp_to_grav($user));
     }
 
-    public function testConvertUsernameJohndotDoe() {
+    public function testConvertUsername_JohndotDoe() {
         // Create a mock WP_User object for testing
 
         $args = array(
@@ -63,7 +63,7 @@ class ConvertUsernameTest extends WP_UnitTestCase {
         $this->assertEquals('john_doe', convert_username_wp_to_grav($user));
     }
 
-    public function testConvertUsernameJo() {
+    public function testConvertUsername_Jo() {
         // Create a mock WP_User object for testing
 
         $args = array(
@@ -76,7 +76,7 @@ class ConvertUsernameTest extends WP_UnitTestCase {
         $this->assertEquals('jo' . $id . '_', convert_username_wp_to_grav($user));
     }
 
-    public function testConvertUsernameJoj() {
+    public function testConvertUsername_Joj() {
         // Create a mock WP_User object for testing
 
         $args = array(
@@ -89,7 +89,7 @@ class ConvertUsernameTest extends WP_UnitTestCase {
         $this->assertEquals('joj' . $id . '__', convert_username_wp_to_grav($user, 6, 16));
     }
 
-    public function testConvertUsernameJohnJacobJingleheimerSchmidt() {
+    public function testConvertUsername_JohnJacobJingleheimerSchmidt() {
         // Create a mock WP_User object for testing
 
         $args = array(
