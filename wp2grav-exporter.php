@@ -55,7 +55,7 @@ function convert_role_wp_to_grav( $role_name ) {
  */
 function convert_username_wp_to_grav( $user, $user_char_min_limit = 4, $user_char_max_limit = 16 ) {
 
-    // Default Grav settings are 4 to 16. Make sure to reflect changes in Grav's system.yaml.
+	// Default Grav settings are 4 to 16. Make sure to reflect changes in Grav's system.yaml.
 
 	$username = $user->user_login;
 
@@ -84,7 +84,7 @@ function convert_username_wp_to_grav( $user, $user_char_min_limit = 4, $user_cha
 	if ( strlen( $username ) > $user_char_max_limit ) {
 		$uid_length = strlen( $user->ID );
 		$username   = substr( $username, 0, ( $user_char_max_limit - $uid_length ) );
-		$username  .= $user->uid;
+		$username  .= $user->ID;
 	}
 
 	return $username;
