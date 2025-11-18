@@ -49,16 +49,17 @@ function convert_role_wp_to_grav( $role_name ) {
  * Converts a WordPress username to Grav.
  *
  * @param WP_USER $user WordPress user to be converted.
+ * @param int     $user_char_min_limit Minimum username character limit.
+ * @param int     $user_char_max_limit Maximum username character limit.
  * @return string Grav username.
  */
-function convert_username_wp_to_grav( $user ) {
-	// Default Grav settings. Make sure to reflect changes in Grav's system.yaml.
-	$user_char_mim_limit = 4;
-	$user_char_max_limit = 16;
+function convert_username_wp_to_grav( $user, $user_char_min_limit = 4, $user_char_max_limit = 16 ) {
 
-	$username = $user->get( 'user_login' );
+    // Default Grav settings are 4 to 16. Make sure to reflect changes in Grav's system.yaml.
 
-	mb_strtolower( $username, 'UTF-8' );
+	$username = $user->user_login;
+
+	$username = mb_strtolower( $username, 'UTF-8' );
 
 	// Replace invalid characters with underscore.
 	$patterns     = array(
@@ -74,14 +75,14 @@ function convert_username_wp_to_grav( $user ) {
 	$username     = preg_replace( $patterns, $replacements, $username );
 
 	// Pad short usernames.
-	if ( strlen( $username ) < $user_char_mim_limit ) {
-		$username = $username . $user->uid;
-		$username = str_pad( $username, $user_char_mim_limit, '_' );
+	if ( strlen( $username ) < $user_char_min_limit ) {
+		$username .= $user->ID;
+		$username  = str_pad( $username, $user_char_min_limit, '_' );
 	}
 
 	// Trim long usernames.
 	if ( strlen( $username ) > $user_char_max_limit ) {
-		$uid_length = strlen( $user->uid );
+		$uid_length = strlen( $user->ID );
 		$username   = substr( $username, 0, ( $user_char_max_limit - $uid_length ) );
 		$username  .= $user->uid;
 	}
