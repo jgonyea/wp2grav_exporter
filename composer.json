@@ -9,7 +9,8 @@
         "phpcompatibility/phpcompatibility-wp": "*",
         "phpunit/phpunit": "^9",
         "yoast/phpunit-polyfills": "*",
-        "wp-cli/wp-cli-bundle": "*"
+        "wp-cli/wp-cli-bundle": "*",
+        "php-stubs/wp-cli-stubs": "^2.12"
     },
     "config": {
         "allow-plugins": {
