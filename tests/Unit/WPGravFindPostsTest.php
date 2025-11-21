@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 /**
- * Class ConvertUsernameTest
+ * Class WPGravFindPostsTest
  *
  * @package Wp2grav_exporter
  */

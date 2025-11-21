@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 /**
- * Class ConvertUsernameTest
+ * Class ConvertUsernamesTest
  *
  * @package Wp2grav_exporter
  */
@@ -10,7 +10,7 @@ use PHPUnit\Framework\OutputError;
 /**
  * Username conversion test case.
  */
-class ConvertUsernameTest extends WP_UnitTestCase {
+class ConvertUsernamesTest extends WP_UnitTestCase {
 
 	/**
 	 * A single example test.
