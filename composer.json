@@ -6,11 +6,21 @@
     "require-dev": {
         "dealerdirect/phpcodesniffer-composer-installer": "*",
         "wp-coding-standards/wpcs": "^3.0",
-        "phpcompatibility/phpcompatibility-wp": "*"
+        "phpcompatibility/phpcompatibility-wp": "*",
+        "phpunit/phpunit": "^9",
+        "yoast/phpunit-polyfills": "*",
+        "wp-cli/wp-cli-bundle": "*",
+        "php-stubs/wp-cli-stubs": "^2.12"
     },
     "config": {
         "allow-plugins": {
             "dealerdirect/phpcodesniffer-composer-installer": true
         }
+    },
+    "scripts": {
+      "test": "vendor/bin/phpunit",
+      "phpcs": "vendor/bin/phpcs",
+      "phpcbf": "vendor/bin/phpcbf",
+      "ddev-setup": "sudo apt update && sudo apt install subversion -y && cd /var/www/html/wp-content/plugins/wp2grav_exporter && ./bin/install-wp-tests.sh wpTest root root db:3306 latest && rsync -ravh /tmp/wordpress-tests-lib /var/www/html/tmp --delete"
     }
 }

@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<phpunit
+	bootstrap="tests/bootstrap.php"
+	backupGlobals="false"
+	colors="true"
+	convertErrorsToExceptions="true"
+	convertWarningsToExceptions="true"
+	convertNoticesToExceptions="true"
+	convertDeprecationsToExceptions="true"
+    printerClass="PHPUnit\Util\TestDox\CliTestDoxPrinter"
+	>
+	<testsuites>
+		<testsuite name="conversions">
+			<directory prefix="Convert" suffix="Test.php">./tests/Unit</directory>
+		</testsuite>
+        <testsuite name="export-plugins">
+            <directory prefix="WP2Grav" suffix="Test.php">./tests/Unit</directory>
+        </testsuite>
+        <testsuite name="utility">
+            <directory prefix="WPGrav" suffix="Test.php">./tests/Unit</directory>
+        </testsuite>
+        <testsuite name="unit">
+            <directory prefix="" suffix="Test.php">./tests/Unit</directory>
+        </testsuite>
+	</testsuites>
+</phpunit>

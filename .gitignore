@@ -1,1 +1,7 @@
 vendor
+
+# PHPUnit Test
+.phpunit.result.cache
+
+# DrawIO temp file
+.$plugin_flow.drawio.bkp
