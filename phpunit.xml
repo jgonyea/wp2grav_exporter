@@ -13,6 +13,9 @@
 		<testsuite name="conversions">
 			<directory prefix="Convert" suffix="Test.php">./tests/Unit</directory>
 		</testsuite>
+        <testsuite name="export-plugins">
+            <directory prefix="WP2Grav" suffix="Test.php">./tests/Unit</directory>
+        </testsuite>
         <testsuite name="utility">
             <directory prefix="WPGrav" suffix="Test.php">./tests/Unit</directory>
         </testsuite>

@@ -1,6 +1,6 @@
 <?php
 /**
- * Class WPGravExportSiteTest
+ * Class WP2GravSiteTest
  *
  * @package wp2grav
  */
@@ -11,7 +11,7 @@ use Symfony\Component\Yaml\Yaml;
 /**
  * Tests for `wp2grav-site` command.
  */
-class WPGravExportSiteTest extends TestCase {
+class WP2GravSiteTest extends TestCase {
 
 	private $export_dir;
 	private $site_yaml;

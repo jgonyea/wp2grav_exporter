@@ -1,6 +1,6 @@
 <?php
 /**
- * Class WPGravExportRolesTest
+ * Class WP2GravRolesTest
  *
  * @package wp2grav
  */
@@ -11,7 +11,7 @@ use Symfony\Component\Yaml\Yaml;
 /**
  * Tests for `wp2grav-roles` command.
  */
-class WPGravExportRolesTest extends TestCase {
+class WP2GravRolesTest extends TestCase {
 
 	private $export_dir;
 	private $groups_yaml;
