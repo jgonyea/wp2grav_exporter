@@ -1,54 +1,69 @@
-<?php declare(strict_types=1);
+<?php
 /**
  * Class WPGravExportSiteTest
  *
  * @package Wp2grav_exporter
  */
 
-use PHPUnit\Framework\OutputError;
+use PHPUnit\Framework\TestCase;
+use Symfony\Component\Yaml\Yaml;
 
 /**
- * Username conversion test case.
+ * Tests for `wp2grav-site` command.
  */
-class WPGravExportSiteTest extends WP_UnitTestCase {
+class WPGravExportSiteTest extends TestCase {
+
+	private $export_dir;
+	private $site_yaml;
 
 
-    /**
-     * Test the 'wp my-command greet' command with a specific name.
-     */
-    public function test_greet_with_name() {
-        // We use ob_start() and ob_get_clean() to capture the output of the command
-        // todo: remove ob_start and load YAML file after the fact.
-        ob_start();
+	public static function setUpBeforeClass(): void {
+		// Set custom WordPress blog name.
+		update_option( 'blogname', 'Test PHPUnit Site' );
+		update_option( 'blogdescription', 'A local test PHPUnit site' );
 
-        // todo: Fix this hardcoded path.
-        $plugin_dir = '/var/www/html/wp-content/plugins/wp2grav_exporter/plugins';
-        // Load plugins.
+		// Find wp2grav_exporter plugin path.
+		$test_plugin_dir = explode( '/', plugin_dir_path( __FILE__ ) );
+		$needle          = array_search( 'wp2grav_exporter', $test_plugin_dir, true );
+		$test_plugin_dir = array_slice( $test_plugin_dir, 0, $needle + 1 );
+		$test_plugin_dir = implode( '/', $test_plugin_dir );
 
-        $files = glob( $plugin_dir . '/wp2grav-*.php' );
+		include_once $test_plugin_dir . '/plugins/wp2grav-site.php';
 
-        foreach ( $files as $file ) {
-            // PHP require source file.
-            require_once $file;
+		wp2grav_export_site();
+	}
 
-        }
+	public static function tearDownAfterClass(): void {
+		global $wp_filesystem;
+		$site_yaml = WP_CONTENT_DIR . '/uploads/wp2grav-exports/user-' . gmdate( 'Ymd' ) . '/config/site.yaml';
+		$wp_filesystem->delete( $site_yaml );
+	}
 
-        update_option( 'blogname', 'WP PHPUnit Test Site');
+	protected function setUp(): void {
+		$this->export_dir = WP_CONTENT_DIR . '/uploads/wp2grav-exports/user-' . gmdate( 'Ymd' ) . '/';
+		$this->site_yaml  = $this->export_dir . 'config/site.yaml';
+	}
 
-        wp2grav_export_site();
+	public function testValidatesite_yaml(): void {
+		$site_yaml = Yaml::parseFile( $this->site_yaml );
 
+		// Grav Site title should match WordPress blogname.
+		$this->assertSame( $site_yaml['title'], 'Test PHPUnit Site' );
+	}
 
-        //$command->greet( [], [ 'name' => 'TestUser' ] );
+	public function testValidateSiteAuthor(): void {
+		$site_yaml = Yaml::parseFile( $this->site_yaml );
 
-        $output = ob_get_clean();
+		// Grav Site author should match user 0's information.
+		$this->assertSame( 'admin', $site_yaml['author']['name'] );
+		$this->assertSame( 'admin@example.org', $site_yaml['author']['email'] );
+	}
 
-        // The expected output will include "Success: " prefix used by WP_CLI::success()
-        $expected_output = "Success: Hello, TestUser!\n";
+	public function testValidateSiteMetadata(): void {
+		$site_yaml = Yaml::parseFile( $this->site_yaml );
 
-        // Assert that the actual output matches the expected output
-        $this->assertEquals( $expected_output, $output );
-    }
-
-
-
+		// Grav site description should match WordPress blogdescription.
+		$this->assertSame( 'A local test PHPUnit site', $site_yaml['metadata']['description'] );
+	}
 }
+
