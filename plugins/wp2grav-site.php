@@ -21,7 +21,9 @@ if ( ! isset( $wp_filesystem ) ) {
  */
 function wp2grav_export_site() {
 	global $wp_filesystem;
-	WP_CLI::line( WP_CLI::colorize( '%YBeginning site.yaml export%n ' ) );
+	if ( defined( 'WP_CLI' ) && WP_CLI ) {
+        WP_CLI::line( WP_CLI::colorize( '%YBeginning site.yaml export%n ' ) );
+    }
 	$export_plugins_dir = plugin_dir_path( __FILE__ );
 	$export_dir         = WP_CONTENT_DIR . '/uploads/wp2grav-exports/user-' . gmdate( 'Ymd' ) . '/';
 	$config_export_dir  = $export_dir . 'config/';
@@ -55,5 +57,7 @@ function wp2grav_export_site() {
 	$site_yaml = Yaml::dump( $site_info, 20, 2 );
 	$wp_filesystem->put_contents( $config_export_dir . 'site.yaml', $site_yaml );
 
-	WP_CLI::success( 'config/site.yaml export complete!' );
+	if ( defined( 'WP_CLI' ) && WP_CLI ) {
+        WP_CLI::success( 'config/site.yaml export complete!' );
+    }
 }

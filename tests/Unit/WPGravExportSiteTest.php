@@ -2,7 +2,7 @@
 /**
  * Class WPGravExportSiteTest
  *
- * @package Wp2grav_exporter
+ * @package wp2grav
  */
 
 use PHPUnit\Framework\TestCase;
@@ -42,9 +42,13 @@ class WPGravExportSiteTest extends TestCase {
 	protected function setUp(): void {
 		$this->export_dir = WP_CONTENT_DIR . '/uploads/wp2grav-exports/user-' . gmdate( 'Ymd' ) . '/';
 		$this->site_yaml  = $this->export_dir . 'config/site.yaml';
+        $this->assertFileExists(
+            $this->site_yaml,
+            "Missing site.yaml"
+        );
 	}
 
-	public function testValidatesite_yaml(): void {
+	public function testValidateSiteYaml(): void {
 		$site_yaml = Yaml::parseFile( $this->site_yaml );
 
 		// Grav Site title should match WordPress blogname.
