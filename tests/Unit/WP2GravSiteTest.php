@@ -35,8 +35,9 @@ class WP2GravSiteTest extends TestCase {
 
 	public static function tearDownAfterClass(): void {
 		global $wp_filesystem;
-		$site_yaml = WP_CONTENT_DIR . '/uploads/wp2grav-exports/user-' . gmdate( 'Ymd' ) . '/config/site.yaml';
-		$wp_filesystem->delete( $site_yaml );
+        $export_dir = WP_CONTENT_DIR . '/uploads/wp2grav-exports/user-' . gmdate( 'Ymd' ) . '/';
+        $config_dir = $export_dir . 'config/';
+		$wp_filesystem->rmdir( $config_dir, true );
 	}
 
 	protected function setUp(): void {

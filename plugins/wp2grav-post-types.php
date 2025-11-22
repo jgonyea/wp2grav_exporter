@@ -65,8 +65,6 @@ function wp2grav_export_post_types() {
 	// Creates a new progress bar.
 	$progress_type = \WP_CLI\Utils\make_progress_bar( ' |- Discovering ' . count( $post_types ) . ' post types', count( $post_types ), $interval = 100 );
 
-	// Since WordPress doesn't store its metadata in a consistent manner, we'll have to do some guessing along the way.
-
 	// Iterate through all post types.
 	foreach ( $post_types as $post_type ) {
 		global $wp_filesystem;
@@ -179,7 +177,7 @@ function wp2grav_export_post_types() {
 				default:
 					// Assume a text field.
 					$new_fields[ 'header.' . $field_type ] = array(
-						'help'  => "Help description for $field_type",
+						'help'  => "Generic help description for $field_type.",
 						'label' => $field_type,
 						'type'  => 'text',
 					);
