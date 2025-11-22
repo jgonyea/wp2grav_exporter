@@ -21,7 +21,11 @@ if ( ! isset( $wp_filesystem ) ) {
  */
 function wp2grav_export_users() {
 	global $wp_filesystem;
-	WP_CLI::line( WP_CLI::colorize( '%YBeginning user export%n ' ) );
+
+    if ( defined( 'WP_CLI' ) && WP_CLI ) {
+        WP_CLI::line( WP_CLI::colorize( '%YBeginning user export%n ' ) );
+    }
+
 	$export_folder = WP_CONTENT_DIR . '/uploads/wp2grav-exports/user-' . gmdate( 'Ymd' ) . '/accounts/';
 	if ( ! wp_mkdir_p( $export_folder ) ) {
 		WP_CLI::error( "Could not create accounts export folder at $export_folder" );

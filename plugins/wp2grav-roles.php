@@ -22,7 +22,7 @@ if ( ! isset( $wp_filesystem ) ) {
  * @throws Exception Error if export folder unwriteable.
  * @return void
  */
-function wp2grav_export_roles( $args, $assoc_args ) {
+function wp2grav_export_roles() {
 	global $wp_filesystem;
 	if ( defined( 'WP_CLI' ) && WP_CLI ) {
         WP_CLI::line( WP_CLI::colorize( '%YBeginning role export%n ' ) );
