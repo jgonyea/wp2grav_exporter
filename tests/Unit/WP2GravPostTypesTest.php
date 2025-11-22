@@ -31,6 +31,21 @@ class WP2GravPostTypesTest extends TestCase {
 
 		include_once $test_plugin_dir . '/plugins/wp2grav-post-types.php';
 
+        // Generate custom post types.
+
+        register_post_type(
+        'movies',
+        array(
+            'labels' => array(
+                'name' => __( 'Movies' ),
+                'singular_name' => __( 'Movie' )
+            ),
+            'public' => true,
+            'has_archive' => true,
+            'rewrite' => array('slug' => 'movies'),
+            'show_in_rest' => true,
+        ));
+
 		wp2grav_export_post_types();
 	}
 
