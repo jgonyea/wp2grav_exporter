@@ -43,7 +43,7 @@ class WP2GravUsersTest extends TestCase {
 
 	private static function getNewUserData() {
 		$user_data = array(
-			'SubbyMcSubFace' => array(
+			'SubbyMcSubFace'   => array(
 				'user_login'           => 'subbymcsubface',
 				'user_nicename'        => 'Subby McSubFace',
 				'nickname'             => 'Subby McSubFaced',
@@ -64,7 +64,7 @@ class WP2GravUsersTest extends TestCase {
 				'role'                 => 'subscriber',
 				'locale'               => '',
 			),
-			'ContribUnder'   => array(
+			'ContribUnder'     => array(
 				'user_login'           => 'contribunder',
 				'user_nicename'        => 'Contrib Under',
 				'nickname'             => 'Contrib Under',
@@ -85,7 +85,7 @@ class WP2GravUsersTest extends TestCase {
 				'role'                 => 'contributor',
 				'locale'               => '',
 			),
-			'AuthorConanDoyle'   => array(
+			'AuthorConanDoyle' => array(
 				'user_login'           => 'authordoyle',
 				'user_nicename'        => 'Author Conan Doyle',
 				'nickname'             => 'Author C',
@@ -106,17 +106,17 @@ class WP2GravUsersTest extends TestCase {
 				'role'                 => 'author',
 				'locale'               => '',
 			),
-			'EditorPerson'   => array(
-				'user_login'           => 'editorperson',
-				'user_nicename'        => 'Editor Person',
-				'nickname'             => 'Editor P',
-				'user_email'           => 'editorperson@example.com',
+			'MarcusEditarious' => array(
+				'user_login'           => 'marcuseditarious',
+				'user_nicename'        => 'Marcus Editarious',
+				'nickname'             => 'Marcus E',
+				'user_email'           => 'marcuseditariousn@example.com',
 				'user_pass'            => wp_generate_password(),
-				'first_name'           => 'Editor',
-				'last_name'            => 'Person',
-				'display_name'         => 'Editor P',
+				'first_name'           => 'Marcus',
+				'last_name'            => 'Editarious',
+				'display_name'         => 'Marcus E',
 				'user_url'             => 'https://example.com',
-				'description'          => 'A couple words about Editor here.',
+				'description'          => 'A couple words about Editarious here.',
 				'rich_editing'         => 'true',
 				'syntax_highlighting'  => 'true',
 				'comment_shortcuts'    => 'false',
@@ -143,7 +143,7 @@ class WP2GravUsersTest extends TestCase {
 		$accounts     = glob( $accounts_dir . '/*.yaml' );
 		foreach ( $accounts as $account ) {
 			if ( is_file( $account ) ) {
-				//$wp_filesystem->delete( $account );
+				$wp_filesystem->delete( $account );
 			}
 		}
 
@@ -196,9 +196,6 @@ class WP2GravUsersTest extends TestCase {
 		$this->assertContains( 'wp_authenticated_user', $admin_account['groups'], 'Missing authenticated group' );
 	}
 
-
-
-
 	public function testValidateAuthorUserYaml(): void {
 		$account      = $this->export_dir . 'accounts/authordoyle.yaml';
 		$account_yaml = YAML::parseFile( $account );
@@ -242,7 +239,7 @@ class WP2GravUsersTest extends TestCase {
 		$this->assertNotContains( 'wp_administrator', $account_yaml['groups'], 'Erroneously added to extra administrator group' );
 	}
 
-    public function testValidateContributerUserYaml(): void {
+	public function testValidateContributerUserYaml(): void {
 		$account      = $this->export_dir . 'accounts/contribunder.yaml';
 		$account_yaml = YAML::parseFile( $account );
 
@@ -284,8 +281,9 @@ class WP2GravUsersTest extends TestCase {
 		$this->assertContains( 'wp_contributor', $account_yaml['groups'], 'Missing subscriber group' );
 		$this->assertNotContains( 'wp_administrator', $account_yaml['groups'], 'Erroneously added to extra administrator group' );
 	}
+
 	public function testValidateEditorUserYaml(): void {
-		$account      = $this->export_dir . 'accounts/editorperson.yaml';
+		$account      = $this->export_dir . 'accounts/marcuseditarious.yaml';
 		$account_yaml = YAML::parseFile( $account );
 
 		$this->assertFileExists(
@@ -295,7 +293,7 @@ class WP2GravUsersTest extends TestCase {
 
 		// Verify Grav account fullname.
 		$this->assertSame(
-			'Editor P',
+			'Marcus E',
 			$account_yaml['fullname'],
 			'Wrong name for account'
 		);
@@ -309,7 +307,7 @@ class WP2GravUsersTest extends TestCase {
 
 		// Email.
 		$this->assertSame(
-			'editorperson@example.com',
+			'marcuseditariousn@example.com',
 			$account_yaml['email'],
 			'Wrong Email for account'
 		);
@@ -327,7 +325,7 @@ class WP2GravUsersTest extends TestCase {
 		$this->assertNotContains( 'wp_administrator', $account_yaml['groups'], 'Erroneously added to extra administrator group' );
 	}
 
-    public function testValidateSubscriberUserYaml(): void {
+	public function testValidateSubscriberUserYaml(): void {
 		$account      = $this->export_dir . 'accounts/subbymcsubface.yaml';
 		$account_yaml = YAML::parseFile( $account );
 
