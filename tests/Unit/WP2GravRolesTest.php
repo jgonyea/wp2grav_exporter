@@ -26,7 +26,7 @@ class WP2GravRolesTest extends TestCase {
 
 		include_once $test_plugin_dir . '/plugins/wp2grav-roles.php';
 
-		wp2grav_export_roles(array(), array());
+		wp2grav_export_roles();
 	}
 
 	public static function tearDownAfterClass(): void {

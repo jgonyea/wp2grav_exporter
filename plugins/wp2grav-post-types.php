@@ -65,8 +65,6 @@ function wp2grav_export_post_types() {
 	// Creates a new progress bar.
 	$progress_type = \WP_CLI\Utils\make_progress_bar( ' |- Discovering ' . count( $post_types ) . ' post types', count( $post_types ), $interval = 100 );
 
-	// Since WordPress doesn't store its metadata in a consistent manner, we'll have to do some guessing along the way.
-
 	// Iterate through all post types.
 	foreach ( $post_types as $post_type ) {
 		global $wp_filesystem;
@@ -121,7 +119,9 @@ function wp2grav_export_post_types() {
 					break;
 
 				case 'comments':
-					// Todo: Process comments.
+					// Grav has a paid comments plugin, but exporting data to it is currently unsupported by
+                    // this post-types exporter.
+                    // See https://github.com/jgonyea/wp2grav_exporter/issues/27 for current status.
 					break;
 
 				case 'editor':
@@ -136,36 +136,36 @@ function wp2grav_export_post_types() {
 					);
 					break;
 
-				case 'image':
-					$new_fields[ 'header.' . $field_name ] = array(
-						'label'       => $field_name,
-						'type'        => 'file',
-						'help'        => wp_strip_all_tags( $field['description'] ) . ' | Available file types: ' . $field['settings']['file_extensions'],
-						'destination' => 'user/data/' . $field['settings']['file_directory'],
-						'accept'      => array( 'image/*' ),
-					);
-					if ( 1 !== $field_info['cardinality'] ) {
-						$new_fields[ 'header.' . $field_name ]['multiple'] = true;
-					} else {
-						$new_fields[ 'header.' . $field_name ]['multiple'] = false;
-					}
-
-					// Hard coding this for now.
+				case 'thumbnail':
+                    // Hard coding this for now.
 					$image_extensions = array(
-						'.jpg',
-						'.jpeg',
-						'.png',
-						'.gif',
+						'jpg',
+						'jpeg',
+						'png',
+						'gif',
+					);
+					$new_fields[ 'header.' . $field_type ] = array(
+						'label'       => $field_type,
+						'type'        => 'file',
+						'help'        => 'Available file types: ' . implode( ',', $image_extensions ),
+                        'multiple'      => false,
+                        'destination' => 'user/data/'
 					);
 
-					$extensions = explode( ' ', $image_extensions );
-					foreach ( $extensions as $extension ) {
-						$new_fields[ 'header.' . $field_name ]['accept'][] = $extension;
+                    // Todo: debug this next line.
+                    //$new_fields[ 'header.' . $field_name ]['destination'] = 'user/data/';
+
+
+					//$extensions = explode( ' ', $image_extensions );
+					foreach ( $image_extensions as $extension ) {
+						$new_fields[ 'header.' . $field_type ]['accept'][] = '.' . $extension;
 					}
 					break;
 
 				case 'revisions':
-					// Grav doesn't really have a concept of revisions. Skip for now.
+					// Grav has a paid revisions plugin, but exporting data to it is currently unsupported by
+                    // this post-types exporter.
+                    // See https://github.com/jgonyea/wp2grav_exporter/issues/27 for current status.
 					break;
 
 				case 'title':
@@ -179,7 +179,7 @@ function wp2grav_export_post_types() {
 				default:
 					// Assume a text field.
 					$new_fields[ 'header.' . $field_type ] = array(
-						'help'  => "Help description for $field_type",
+						'help'  => "Generic help description for $field_type.",
 						'label' => $field_type,
 						'type'  => 'text',
 					);
