@@ -18,7 +18,7 @@
         }
     },
     "scripts": {
-      "test": "vendor/bin/phpunit",
+      "test": "clear && vendor/bin/phpunit",
       "phpcs": "vendor/bin/phpcs",
       "phpcbf": "vendor/bin/phpcbf",
       "ddev-setup": "sudo apt update && sudo apt install subversion -y && cd /var/www/html/wp-content/plugins/wp2grav_exporter && ./bin/install-wp-tests.sh wpTest root root db:3306 latest && rsync -ravh /tmp/wordpress-tests-lib /var/www/html/tmp --delete"

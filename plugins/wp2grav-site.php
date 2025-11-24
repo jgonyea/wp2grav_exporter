@@ -54,6 +54,24 @@ function wp2grav_export_site() {
 		),
 	);
 
+    // Grav stores taxonomies in the site.yaml.
+    $grav_taxonomies = array();
+    $taxonomies = get_taxonomies(array(), 'objects');
+    foreach ( $taxonomies as $taxonomy ) {
+        if ( $taxonomy->public ) {
+            $grav_taxonomies[] = $taxonomy->name;
+        }
+    }
+    if ( $grav_taxonomies ) {
+        $site_info['taxonomies'] = $grav_taxonomies;
+    } else {
+        // Add default Grav taxonomies.
+        $grav_taxonomies = array(
+            'category',
+            'tag'
+        );
+    }
+
 	$site_yaml = Yaml::dump( $site_info, 20, 2 );
 	$wp_filesystem->put_contents( $config_export_dir . 'site.yaml', $site_yaml );
 
