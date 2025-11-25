@@ -30,6 +30,7 @@
         "describe": "Setup DDEV environment for testing",
       "pre-commit": [
         "clear",
+        "vendor/bin/phpunit",
         "vendor/bin/phpcs tests",
         "vendor/bin/phpcs plugins",
         "vendor/bin/phpcs wp2grav_exporter.php"
