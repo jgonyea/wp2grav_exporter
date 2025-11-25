@@ -1,16 +1,20 @@
 <?php
-/*
-Plugin Name: Grav Export
-Plugin URI:  https://www.github.com/jgonyea/wp2grav_exporter
-Description: This plugin converts WP content for use in a GravCMS instance.
-Version:     0.2.2
-Author:      Jeremy Gonyea
-Author URI:  https://www.gonyea.io
-License:     MIT
-License URI: https://mit-license.org/
+/**
+ * Plugin Name: Grav Export
+ * Plugin URI:  https://www.github.com/jgonyea/wp2grav_exporter
+ * Description: This plugin converts WP content for use in a GravCMS instance.
+ * Version:     0.2.2
+ * Author:      Jeremy Gonyea
+ * Author URI:  https://www.gonyea.io
+ * License:     MIT
+ * License URI: https://mit-license.org/
+ *
+ * @package wp2grav
+ */
 
-*/
-
+/**
+ * Loads composer dependencies.
+ */
 require 'vendor/autoload.php';
 
 if ( defined( 'WP_CLI' ) && WP_CLI ) {
@@ -20,7 +24,7 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
 	$files = glob( $plugin_dir . '/wp2grav-*.php' );
 
 	foreach ( $files as $file ) {
-		// PHP require source file.
+		// Import plugins.
 		require_once $file;
 
 		// Derive expected function names from filenames.

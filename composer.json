@@ -27,13 +27,12 @@
         "cd /var/www/html/wp-content/plugins/wp2grav_exporter",
         "./bin/install-wp-tests.sh wpTest root root db:3306 latest",
         "rsync -ravh /tmp/wordpress-tests-lib /var/www/html/tmp --delete"],
-        "describe": "Setup DDEV environment for testing",
       "pre-commit": [
         "clear",
         "vendor/bin/phpunit",
         "vendor/bin/phpcs tests",
         "vendor/bin/phpcs plugins",
-        "vendor/bin/phpcs wp2grav_exporter.php"
+        "vendor/bin/phpcs ./wp2grav-exporter.php"
       ]
     }
 }

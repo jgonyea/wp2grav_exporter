@@ -17,16 +17,14 @@ if ( ! isset( $wp_filesystem ) ) {
 /**
  * Exports WP roles to a GravCMS-formatted group.yaml file.
  *
- * @param array $args CLI arguments.
- * @param array $assoc_args Associated CLI arguments.
  * @throws Exception Error if export folder unwriteable.
  * @return void
  */
 function wp2grav_export_roles() {
 	global $wp_filesystem;
 	if ( defined( 'WP_CLI' ) && WP_CLI ) {
-        WP_CLI::line( WP_CLI::colorize( '%YBeginning role export%n ' ) );
-    }
+		WP_CLI::line( WP_CLI::colorize( '%YBeginning role export%n ' ) );
+	}
 	$export_folder = WP_CONTENT_DIR . '/uploads/wp2grav-exports/user-' . gmdate( 'Ymd' ) . '/config/';
 	if ( ! wp_mkdir_p( $export_folder ) ) {
 		WP_CLI::error( 'Could not create export folder' );
@@ -64,9 +62,9 @@ function wp2grav_export_roles() {
 	// Finish the progress bar.
 	$progress->finish();
 
-    if ( defined( 'WP_CLI' ) && WP_CLI ) {
-	    WP_CLI::line( "Saving role export data to $export_folder/groups.yaml" );
-    }
+	if ( defined( 'WP_CLI' ) && WP_CLI ) {
+		WP_CLI::line( "Saving role export data to $export_folder/groups.yaml" );
+	}
 	$group_content = Yaml::dump( $groups, 20, 4 );
 
 	try {
