@@ -1,6 +1,7 @@
 <?php
 /**
  * PHPUnit bootstrap file.
+ *
  * @package wp2grav_exporter
  */
 
