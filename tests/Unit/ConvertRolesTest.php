@@ -8,24 +8,43 @@
 use PHPUnit\Framework\OutputError;
 
 /**
- * Sample test case.
+ * Converts WordPress role names to Grav group names.
  */
 class ConvertRolesTest extends WP_UnitTestCase {
 
+	/**
+	 * Convert 'Administrator' role name.
+	 *
+	 * @return void
+	 */
 	public function test_ConvertRoleAdmin() {
-        $this->assertEquals('Administrator', convert_role_wp_to_grav('Administrator'));
-    }
+		$this->assertEquals( 'Administrator', convert_role_wp_to_grav( 'Administrator' ) );
+	}
 
-    public function test_ConvertRoleEditor() {
-        $this->assertEquals('Editor', convert_role_wp_to_grav('Editor'));
-    }
+	/**
+	 * Convert 'Editor' role name.
+	 *
+	 * @return void
+	 */
+	public function test_ConvertRoleEditor() {
+		$this->assertEquals( 'Editor', convert_role_wp_to_grav( 'Editor' ) );
+	}
 
-    public function test_ConvertRoleLowerCaseTest() {
-        $this->assertEquals('lowercasetest', convert_role_wp_to_grav('lowercasetest'));
-    }
+	/**
+	 * Convert a lower case role.
+	 *
+	 * @return void
+	 */
+	public function test_ConvertRoleLowerCaseTest() {
+		$this->assertEquals( 'lowercasetest', convert_role_wp_to_grav( 'lowercasetest' ) );
+	}
 
-    public function test_ConvertRoleWithSpaces() {
-        $this->assertEquals('Role_with_spaces', convert_role_wp_to_grav('Role with spaces'));
-    }
-
+	/**
+	 * Convert role name with spaces.
+	 *
+	 * @return void
+	 */
+	public function test_ConvertRoleWithSpaces() {
+		$this->assertEquals( 'Role_with_spaces', convert_role_wp_to_grav( 'Role with spaces' ) );
+	}
 }
