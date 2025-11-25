@@ -96,7 +96,7 @@ function wp2grav_export_post_types() {
 				if ( $acf_fields ) {
 					foreach ( $acf_fields as $field_name => $acf_field ) {
 						if ( $acf_field['value'] ) {
-							$new_acf_fields[ 'header.wp.meta.acf.' . $field_name ] = convert_acf_field_data_to_grav_admin( $acf_field, $post );
+							$new_acf_fields[ 'header.wp.meta.acf.' . $field_name ] = convert_acf_field_data_to_grav_admin( $acf_field );
 						}
 					}
 				}
@@ -123,8 +123,8 @@ function wp2grav_export_post_types() {
 
 				case 'comments':
 					// Grav has a paid comments plugin, but exporting data to it is currently unsupported by
-                    // this post-types exporter.
-                    // See https://github.com/jgonyea/wp2grav_exporter/issues/27 for current status.
+					// this post-types exporter.
+					// See https://github.com/jgonyea/wp2grav_exporter/issues/27 for current status.
 					break;
 
 				case 'editor':
@@ -140,8 +140,8 @@ function wp2grav_export_post_types() {
 					break;
 
 				case 'thumbnail':
-                    // Hard coding this for now.
-					$image_extensions = array(
+					// Hard coding this for now.
+					$image_extensions                      = array(
 						'jpg',
 						'jpeg',
 						'png',
@@ -151,15 +151,10 @@ function wp2grav_export_post_types() {
 						'label'       => $field_type,
 						'type'        => 'file',
 						'help'        => 'Available file types: ' . implode( ',', $image_extensions ),
-                        'multiple'      => false,
-                        'destination' => 'user/data/'
+						'multiple'    => false,
+						'destination' => 'user/data/',
 					);
 
-                    // Todo: debug this next line.
-                    //$new_fields[ 'header.' . $field_name ]['destination'] = 'user/data/';
-
-
-					//$extensions = explode( ' ', $image_extensions );
 					foreach ( $image_extensions as $extension ) {
 						$new_fields[ 'header.' . $field_type ]['accept'][] = '.' . $extension;
 					}
@@ -167,8 +162,8 @@ function wp2grav_export_post_types() {
 
 				case 'revisions':
 					// Grav has a paid revisions plugin, but exporting data to it is currently unsupported by
-                    // this post-types exporter.
-                    // See https://github.com/jgonyea/wp2grav_exporter/issues/27 for current status.
+					// this post-types exporter.
+					// See https://github.com/jgonyea/wp2grav_exporter/issues/27 for current status.
 					break;
 
 				case 'title':
@@ -218,12 +213,11 @@ function wp2grav_export_post_types() {
 /**
  * Converts an advanced-custom-fields to a Grav's admin form field.
  *
- * @param array   $acf_field Advanced Custom Field.
- * @param WP_Post $post WordPress post.
+ * @param array $acf_field Advanced Custom Field.
  * @return array
  *   Converted field data.
  */
-function convert_acf_field_data_to_grav_admin( $acf_field, $post ) {
+function convert_acf_field_data_to_grav_admin( $acf_field ) {
 	$grav_field = null;
 	switch ( $acf_field['type'] ) {
 		case 'email':
