@@ -22,8 +22,9 @@ if ( ! isset( $wp_filesystem ) ) {
 function wp2grav_export_site() {
 	global $wp_filesystem;
 	if ( defined( 'WP_CLI' ) && WP_CLI ) {
-        WP_CLI::line( WP_CLI::colorize( '%YBeginning site.yaml export%n ' ) );
-    }
+		WP_CLI::line( WP_CLI::colorize( '%YBeginning site.yaml export%n ' ) );
+	}
+
 	$export_plugins_dir = plugin_dir_path( __FILE__ );
 	$export_dir         = WP_CONTENT_DIR . '/uploads/wp2grav-exports/user-' . gmdate( 'Ymd' ) . '/';
 	$config_export_dir  = $export_dir . 'config/';
@@ -54,28 +55,28 @@ function wp2grav_export_site() {
 		),
 	);
 
-    // Grav stores taxonomies in the site.yaml.
-    $grav_taxonomies = array();
-    $taxonomies = get_taxonomies(array(), 'objects');
-    foreach ( $taxonomies as $taxonomy ) {
-        if ( $taxonomy->public ) {
-            $grav_taxonomies[] = $taxonomy->name;
-        }
-    }
-    if ( $grav_taxonomies ) {
-        $site_info['taxonomies'] = $grav_taxonomies;
-    } else {
-        // Add default Grav taxonomies.
-        $grav_taxonomies = array(
-            'category',
-            'tag'
-        );
-    }
+	// Grav stores taxonomies in the site.yaml.
+	$grav_taxonomies = array();
+	$taxonomies      = get_taxonomies( array(), 'objects' );
+	foreach ( $taxonomies as $taxonomy ) {
+		if ( $taxonomy->public ) {
+			$grav_taxonomies[] = $taxonomy->name;
+		}
+	}
+	if ( $grav_taxonomies ) {
+		$site_info['taxonomies'] = $grav_taxonomies;
+	} else {
+		// Add default Grav taxonomies.
+		$grav_taxonomies = array(
+			'category',
+			'tag',
+		);
+	}
 
 	$site_yaml = Yaml::dump( $site_info, 20, 2 );
 	$wp_filesystem->put_contents( $config_export_dir . 'site.yaml', $site_yaml );
 
 	if ( defined( 'WP_CLI' ) && WP_CLI ) {
-        WP_CLI::success( 'config/site.yaml export complete!' );
-    }
+		WP_CLI::success( 'config/site.yaml export complete!' );
+	}
 }

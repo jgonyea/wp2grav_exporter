@@ -20,7 +20,10 @@ if ( ! isset( $wp_filesystem ) ) {
  * @throws Exception Error if export folder unwriteable.
  */
 function wp2grav_export_post_types() {
-	WP_CLI::line( WP_CLI::colorize( '%YBeginning post_types export%n ' ) );
+	if ( defined( 'WP_CLI' ) && WP_CLI ) {
+		WP_CLI::line( WP_CLI::colorize( '%YBeginning post_types export%n ' ) );
+	}
+
 	$export_plugins_dir = plugin_dir_path( __FILE__ );
 	$export_folder      = WP_CONTENT_DIR . '/uploads/wp2grav-exports/user-' . gmdate( 'Ymd' ) . '/';
 

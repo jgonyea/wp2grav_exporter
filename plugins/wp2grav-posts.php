@@ -26,7 +26,10 @@ if ( ! isset( $wp_filesystem ) ) {
  * : Exports a single page of id.
  */
 function wp2grav_export_posts( $args, $assoc_args ) {
-	WP_CLI::line( WP_CLI::colorize( '%YBeginning posts export%n ' ) );
+	if ( defined( 'WP_CLI' ) && WP_CLI ) {
+		WP_CLI::line( WP_CLI::colorize( '%YBeginning posts export%n ' ) );
+	}
+
 	$export_plugins_dir  = plugin_dir_path( __FILE__ );
 	$export_dir          = WP_CONTENT_DIR . '/uploads/wp2grav-exports/user-' . gmdate( 'Ymd' ) . '/';
 	$pages_export_folder = $export_dir . 'pages/';
