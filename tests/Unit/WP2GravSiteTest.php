@@ -13,14 +13,26 @@ use Symfony\Component\Yaml\Yaml;
  */
 class WP2GravSiteTest extends TestCase {
 
+	/**
+	 * Primary export directory for the test site's Grav artifacts.
+	 *
+	 * @var string
+	 */
 	private $export_dir;
+
+	/**
+	 * File path to YAML containing site configuration.
+	 *
+	 * @var string
+	 */
 	private $site_yaml;
 
-
+	/**
+	 * Pre-configures the test environment before any tests are run.
+	 *
+	 * @return void
+	 */
 	public static function setUpBeforeClass(): void {
-		// Set custom WordPress blog name.
-		update_option( 'blogname', 'Test PHPUnit Site' );
-		update_option( 'blogdescription', 'A local test PHPUnit site' );
 
 		// Find wp2grav_exporter plugin path.
 		$test_plugin_dir = explode( '/', plugin_dir_path( __FILE__ ) );
@@ -30,23 +42,42 @@ class WP2GravSiteTest extends TestCase {
 
 		include_once $test_plugin_dir . '/plugins/wp2grav-site.php';
 
+		// Set up test content for export.
+		self::generate_blog_meta();
 		self::generate_custom_taxonomy();
 
+		// Run the export.
 		wp2grav_export_site();
 	}
 
-	private static function generate_custom_taxonomy(): void {
+	/**
+	 * Generates blog meta values for testing purposes.
+	 *
+	 * @return void
+	 */
+	private static function generate_blog_meta(): void {
+		// Set custom WordPress blog name.
+		update_option( 'blogname', 'Test PHPUnit Site' );
+		update_option( 'blogdescription', 'A local test PHPUnit site' );
+	}
+
+	/**
+	 * Generates custom 'Subjects' taxonomy.
+	 *
+	 * @return void
+	 */
+	public static function generate_custom_taxonomy(): void {
 
 		// New 'Subjects' taxonomy definition.
 		$labels = array(
-			'name'      => _x( 'Subjects', 'taxonomy general name' ),
-			'menu_name' => __( 'Subjects' ),
+			'name'      => 'Subjects',
+			'menu_name' => 'Subjects',
 		);
 
 		// Register the taxonomy.
 		register_taxonomy(
 			'subjects',
-			array( 'posts' ),
+			array( 'post' ),
 			array(
 				'hierarchical'      => true,
 				'labels'            => $labels,
@@ -60,6 +91,11 @@ class WP2GravSiteTest extends TestCase {
 		);
 	}
 
+	/**
+	 * Deletes any exported artifacts generated from this test class.
+	 *
+	 * @return void
+	 */
 	public static function tearDownAfterClass(): void {
 		global $wp_filesystem;
 		$export_dir = WP_CONTENT_DIR . '/uploads/wp2grav-exports/user-' . gmdate( 'Ymd' ) . '/';
@@ -67,6 +103,13 @@ class WP2GravSiteTest extends TestCase {
 		$wp_filesystem->rmdir( $config_dir, true );
 	}
 
+	/**
+	 * Runs before any test in this class.
+	 *
+	 * Sets class member variable for export_dir and site_yaml and ensures the exported site.yaml file exists.
+	 *
+	 * @return void
+	 */
 	protected function setUp(): void {
 		$this->export_dir = WP_CONTENT_DIR . '/uploads/wp2grav-exports/user-' . gmdate( 'Ymd' ) . '/';
 		$this->site_yaml  = $this->export_dir . 'config/site.yaml';
@@ -76,14 +119,24 @@ class WP2GravSiteTest extends TestCase {
 		);
 	}
 
-	public function testValidateSiteYaml(): void {
+	/**
+	 * Verifies site title.
+	 *
+	 * @return void
+	 */
+	public function testSiteYaml(): void {
 		$site_yaml = Yaml::parseFile( $this->site_yaml );
 
 		// Grav Site title should match WordPress blogname.
 		$this->assertSame( $site_yaml['title'], 'Test PHPUnit Site' );
 	}
 
-	public function testValidateSiteAuthor(): void {
+	/**
+	 * Validates site author.
+	 *
+	 * @return void
+	 */
+	public function testSiteAuthor(): void {
 		$site_yaml = Yaml::parseFile( $this->site_yaml );
 
 		// Grav Site author should match user 0's information.
@@ -91,14 +144,24 @@ class WP2GravSiteTest extends TestCase {
 		$this->assertSame( 'admin@example.org', $site_yaml['author']['email'] );
 	}
 
-	public function testValidateSiteMetadata(): void {
+	/**
+	 * Validates site metadata.
+	 *
+	 * @return void
+	 */
+	public function testSiteMetadata(): void {
 		$site_yaml = Yaml::parseFile( $this->site_yaml );
 
 		// Grav site description should match WordPress blogdescription.
 		$this->assertSame( 'A local test PHPUnit site', $site_yaml['metadata']['description'] );
 	}
 
-	public function testValidateSiteTaxonomy(): void {
+	/**
+	 * Validates site taxonomy.
+	 *
+	 * @return void
+	 */
+	public function testSiteTaxonomy(): void {
 		$site_yaml = Yaml::parseFile( $this->site_yaml );
 
 		$this->assertArrayHasKey(

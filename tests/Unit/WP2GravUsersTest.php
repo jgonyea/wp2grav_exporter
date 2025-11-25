@@ -13,10 +13,15 @@ use Symfony\Component\Yaml\Yaml;
  */
 class WP2GravUsersTest extends TestCase {
 
+	/**
+	 * Primary export directory for the test site's Grav artifacts.
+	 *
+	 * @var string
+	 */
 	private $export_dir;
 
 	/**
-	 * Include wp2grav plugin for exporting user accounts.
+	 * Pre-configures the test environment before any tests are run.
 	 *
 	 * @return void
 	 */
@@ -29,19 +34,33 @@ class WP2GravUsersTest extends TestCase {
 
 		include_once $test_plugin_dir . '/plugins/wp2grav-users.php';
 
-		// todo: Generate additional fake users.
-		$new_users = self::getNewUserData();
+		$new_users = self::generateNewUserData();
+		self::insertNewUsers( $new_users );
 
+		// Run user exporter.
+		wp2grav_export_users();
+	}
+
+	/**
+	 * Insert new users to test site.
+	 *
+	 * @param array $new_users Test users.
+	 * @return void
+	 */
+	private static function insertNewUsers( array $new_users ): void {
 		foreach ( $new_users as $user ) {
 			$user_id = wp_insert_user(
 				$user
 			);
 		}
-		// Run user exporter.
-		wp2grav_export_users();
 	}
 
-	private static function getNewUserData() {
+	/**
+	 * Generates test users.
+	 *
+	 * @return array Predefined users.
+	 */
+	private static function generateNewUserData() {
 		$user_data = array(
 			'SubbyMcSubFace'   => array(
 				'user_login'           => 'subbymcsubface',
@@ -150,10 +169,20 @@ class WP2GravUsersTest extends TestCase {
 		$wp_filesystem->delete( $accounts_dir );
 	}
 
+	/**
+	 * Set up the test environment before each test.
+	 *
+	 * @return void
+	 */
 	protected function setUp(): void {
 		$this->export_dir = WP_CONTENT_DIR . '/uploads/wp2grav-exports/user-' . gmdate( 'Ymd' ) . '/';
 	}
 
+	/**
+	 * Validates admin.yaml user account.
+	 *
+	 * @return void
+	 */
 	public function testValidateAdminUserYaml(): void {
 		$admin_yaml    = $this->export_dir . 'accounts/admin.yaml';
 		$admin_account = YAML::parseFile( $admin_yaml );
@@ -196,6 +225,11 @@ class WP2GravUsersTest extends TestCase {
 		$this->assertContains( 'wp_authenticated_user', $admin_account['groups'], 'Missing authenticated group' );
 	}
 
+	/**
+	 * Validates user account with author role.
+	 *
+	 * @return void
+	 */
 	public function testValidateAuthorUserYaml(): void {
 		$account      = $this->export_dir . 'accounts/authordoyle.yaml';
 		$account_yaml = YAML::parseFile( $account );
@@ -239,6 +273,11 @@ class WP2GravUsersTest extends TestCase {
 		$this->assertNotContains( 'wp_administrator', $account_yaml['groups'], 'Erroneously added to extra administrator group' );
 	}
 
+	/**
+	 * Validates user account with contributor role.
+	 *
+	 * @return void
+	 */
 	public function testValidateContributerUserYaml(): void {
 		$account      = $this->export_dir . 'accounts/contribunder.yaml';
 		$account_yaml = YAML::parseFile( $account );
@@ -282,6 +321,11 @@ class WP2GravUsersTest extends TestCase {
 		$this->assertNotContains( 'wp_administrator', $account_yaml['groups'], 'Erroneously added to extra administrator group' );
 	}
 
+	/**
+	 * Validates user account with editor role.
+	 *
+	 * @return void
+	 */
 	public function testValidateEditorUserYaml(): void {
 		$account      = $this->export_dir . 'accounts/marcuseditarious.yaml';
 		$account_yaml = YAML::parseFile( $account );
@@ -325,6 +369,11 @@ class WP2GravUsersTest extends TestCase {
 		$this->assertNotContains( 'wp_administrator', $account_yaml['groups'], 'Erroneously added to extra administrator group' );
 	}
 
+	/**
+	 * Validates user account with subscriber role.
+	 *
+	 * @return void
+	 */
 	public function testValidateSubscriberUserYaml(): void {
 		$account      = $this->export_dir . 'accounts/subbymcsubface.yaml';
 		$account_yaml = YAML::parseFile( $account );
