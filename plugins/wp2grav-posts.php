@@ -349,6 +349,7 @@ function render_post( $post, $export_dir ) {
 	$featured_image = wp_get_attachment_url( get_post_thumbnail_id( $post->ID ) );
 	if ( $featured_image ) {
 		$header['media_order'] = basename( $featured_image );
+		$header['hero_image'] = basename( $featured_image );
 		$page_directory        = find_page_output_directory( $post, $export_dir . 'pages/' );
 		copy_media_to_data( $featured_image, $export_dir );
 		copy_media_to_page( $featured_image, $page_directory );

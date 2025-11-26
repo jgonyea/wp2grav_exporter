@@ -1,6 +1,6 @@
 <?php
 /**
- * Class WP2GravPostTest
+ * Class WP2GravUnpublishedPostTest
  *
  * @package wp2grav
  */
@@ -9,9 +9,9 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Yaml\Yaml;
 
 /**
- * Tests for `wp2grav-posts` command on a typical post with images.
+ * Tests unpublised posts.
  */
-class WP2GravPostTest extends TestCase {
+class WP2GravUnpublishedPostTest extends TestCase {
 
 	/**
 	 * Primary export directory for the test site's Grav artifacts.
@@ -66,85 +66,28 @@ class WP2GravPostTest extends TestCase {
 		require_once ABSPATH . 'wp-admin/includes/file.php';
 		require_once ABSPATH . 'wp-admin/includes/image.php';
 
-		// Inline Images.
-		$inline_image_id   = self::uploadPNGImage(
-			'https://lipsum.app/640x480/#.png',
-			'inline-image.png',
-			'Inline Image Test'
-		);
-		$inline_image_html = wp_get_attachment_image( $inline_image_id, 'full' );
+
 
 		// Generate page.
 		// todo: add taxonomy to page.
 		$taxonomy_id = get_cat_ID( 'Subjects' );
 
-		$post_text_only = array(
-			'post_title'   => 'Lorem Ipsum',
-			'post_content' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. <br />' . $inline_image_html . '<br /> Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-			'post_status'  => 'publish',
-			'post_author'  => 0,
-			'post_type'    => 'post',
+		$draft_date = gmdate( 'Y-m-d', strtotime( '+1 year' ) );
+		$draft_args = array(
+			'post_title'    => 'Draft Ipsum',
+			'post_content' => 'Draft ipsum dolor sit amet, consectetur adipiscing elit.',
+			'post_status'   => 'future',
+			'post_type'     => 'post',
+			'post_author'	=> 0
 		);
-		$post_id        = wp_insert_post( $post_text_only );
+
+		$post_id        = wp_insert_post( $draft_args, true );
 		wp_set_post_terms(
 			$post_id,
 			'testing post',
 			'subjects',
 			true
 		);
-
-		// Add featured image to post.
-		$featured_image_id = self::uploadPNGImage(
-			'https://lipsum.app/1024x768/#.png',
-			'featured-image.png',
-			'Featured Image',
-			$post_id
-		);
-
-		set_post_thumbnail( $post_id, $featured_image_id );
-	}
-
-
-	/**
-	 * Pulls an image and uploads it to the test site.
-	 *
-	 * @param mixed $image_url URL of image to download from the internet and upload to the test site.
-	 * @param mixed $filename Name of file to be saved.
-	 * @param mixed $alt_text Alternative text for the image.
-	 * @param mixed $post_id ID of the post to which the image should be attached. Defaults to 0.
-	 * @return int Image attachment ID.
-	 */
-	public static function uploadPNGImage( $image_url, $filename, $alt_text, $post_id = 0 ): int {
-		$image_tmp  = download_url( $image_url );
-		$image_size = filesize( $image_tmp );
-
-		$file = array(
-			'name'     => $filename,
-			'type'     => 'image/png',
-			'tmp_name' => $image_tmp,
-			'error'    => 0,
-			'size'     => $image_size,
-		);
-
-		$image_id = media_handle_sideload(
-			$file,
-			$post_id,
-			$alt_text
-		);
-
-		// Apply alt text.
-		update_post_meta(
-			$image_id,
-			'_wp_attachment_image_alt',
-			$alt_text
-		);
-
-		// Cleanup.
-		if ( file_exists( $image_tmp ) ) {
-			wp_delete_file( $image_tmp );
-		}
-
-		return $image_id;
 	}
 
 	/**
@@ -173,6 +116,8 @@ class WP2GravPostTest extends TestCase {
 		$this->export_dir = WP_CONTENT_DIR . '/uploads/wp2grav-exports/user-' . gmdate( 'Ymd' ) . '/';
 		$this->pages_dir  = $this->export_dir . 'pages/';
 		$this->data_dir   = $this->export_dir . 'data/wp-content';
+
+		// todo: delete all uploaded images from test setup.
 	}
 
 	/**
@@ -223,8 +168,8 @@ class WP2GravPostTest extends TestCase {
 	 */
 	public function testPostExists(): void {
 		$this->assertFileExists(
-			$this->pages_dir . 'blog/lorem-ipsum/wp_post.md',
-			'Missing blog post at pages/blog/lorem-ipsum/wp_post.md'
+			$this->pages_dir . 'blog/draft-ipsum/wp_post.md',
+			'Missing blog post at pages/blog/draft-ipsum/wp_post.md'
 		);
 	}
 
@@ -238,7 +183,7 @@ class WP2GravPostTest extends TestCase {
 		require_once ABSPATH . '/wp-admin/includes/file.php';
 		WP_Filesystem();
 
-		$post_path = $this->pages_dir . 'blog/lorem-ipsum/wp_post.md';
+		$post_path = $this->pages_dir . 'blog/draft-ipsum/wp_post.md';
 		$post      = $wp_filesystem->get_contents( $post_path );
 
 		$grav_header_regex = '/^---([\s\S]*?)---/';
@@ -249,7 +194,7 @@ class WP2GravPostTest extends TestCase {
 
 		// Assert page header.
 		$this->assertEquals(
-			'Lorem Ipsum',
+			'Draft Ipsum',
 			$header['title'],
 			'Incorrect page title'
 		);
@@ -271,7 +216,7 @@ class WP2GravPostTest extends TestCase {
 			'Incorrect published date'
 		);
 
-		$query = new WP_Query( array( 'title' => 'Lorem Ipsum' ) );
+		$query = new WP_Query( array( 'title' => 'Draft Ipsum' ) );
 		if ( $query->have_posts() ) {
 			$post = $query->posts[0];
 			$this->assertEquals(
@@ -285,26 +230,9 @@ class WP2GravPostTest extends TestCase {
 
 		// Assert page content.
 		$this->assertEquals(
-			"\nLorem ipsum dolor sit amet, consectetur adipiscing elit. \n![Inline Image Test](user://data/wp-content/uploads/2025/11/inline-image.png)\n Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+			"\nDraft ipsum dolor sit amet, consectetur adipiscing elit.",
 			$content,
 			'Incorrect page content'
-		);
-	}
-
-	/**
-	 * Validate that the featured image is saved to the post directory.
-	 *
-	 * @return void
-	 */
-	public function testVerifyPostFeaturedImage(): void {
-		global $wp_filesystem;
-		require_once ABSPATH . '/wp-admin/includes/file.php';
-		WP_Filesystem();
-		$post_path = $this->pages_dir . 'blog/lorem-ipsum';
-
-		$this->assertFileExists(
-			$post_path . '/featured-image.png',
-			'Missing featured image'
 		);
 	}
 }
