@@ -51,6 +51,9 @@ class WP2GravRolesTest extends TestCase {
 	 * @return void
 	 */
 	public static function tearDownAfterClass(): void {
+		if ( ! defined( 'WP2GRAV_DELETE_ARTIFACTS' ) || WP2GRAV_DELETE_ARTIFACTS === false ) {
+			return;
+		}
 		global $wp_filesystem;
 		$groups_yaml = WP_CONTENT_DIR . '/uploads/wp2grav-exports/user-' . gmdate( 'Ymd' ) . '/config/groups.yaml';
 		$wp_filesystem->delete( $groups_yaml );
