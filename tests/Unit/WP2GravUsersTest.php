@@ -157,6 +157,9 @@ class WP2GravUsersTest extends TestCase {
 	 * @return void
 	 */
 	public static function tearDownAfterClass(): void {
+		if ( ! defined( 'WP2GRAV_DELETE_ARTIFACTS' ) || WP2GRAV_DELETE_ARTIFACTS === false ) {
+			return;
+		}
 		global $wp_filesystem;
 		$accounts_dir = WP_CONTENT_DIR . '/uploads/wp2grav-exports/user-' . gmdate( 'Ymd' ) . '/accounts';
 		$accounts     = glob( $accounts_dir . '/*.yaml' );

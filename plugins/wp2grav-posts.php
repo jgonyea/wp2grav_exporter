@@ -99,6 +99,46 @@ function wp2grav_export_posts( $args, $assoc_args ) {
 	WP_CLI::success( 'Saved Complete!  ' . count( $posts ) . " posts exported to $pages_export_folder" );
 }
 
+/**
+ * Calculate the final page destination directory.
+ *
+ * @param WP_Post $post WordPress post.
+ * @param string  $pages_export_folder Base directory of pages.
+ * @return string Final page destination directory.
+ */
+function find_page_output_directory( $post, $pages_export_folder ) {
+	$page_folder = '';
+
+	switch ( $post->post_type ) {
+		case 'trash':
+			$page_folder = $pages_export_folder . 'z_trashed/' . $post->post_name . '/';
+			break;
+
+		case 'post':
+			$page_folder = $pages_export_folder . 'blog/' . $post->post_name . '/';
+
+			// Generate blog.md if not present.
+			$plugin_components_files_path = dirname( plugin_dir_path( __FILE__ ) ) . '/grav_components/';
+			$blog_src                     = $plugin_components_files_path . 'blog.md';
+			$blog_md                      = $pages_export_folder . 'blog/blog.md';
+
+			if ( ! file_exists( $blog_md ) ) {
+				wp_mkdir_p( $pages_export_folder . 'blog' );
+				copy( $blog_src, $blog_md );
+			}
+			break;
+
+		case 'product':
+			$page_folder = $pages_export_folder . 'products/' . $post->post_name . '/';
+			break;
+
+		default:
+			$page_folder = $pages_export_folder . $post->post_name . '/';
+	}
+
+	return $page_folder;
+}
+
 
 /**
  * Finds all comments of a post/ page.
@@ -141,34 +181,7 @@ function find_comments( $id ) {
  */
 function save_post( $post, $page_render, $comments_render, $pages_export_folder ) {
 	global $wp_filesystem;
-	$page_folder = '';
-
-	switch ( $post->post_type ) {
-		case 'trash':
-			$page_folder = $pages_export_folder . 'z_trashed/' . $post->post_name . '/';
-			break;
-
-		case 'post':
-			$page_folder = $pages_export_folder . 'blog/' . $post->post_name . '/';
-
-			// Generate blog.md if not present.
-			$plugin_components_files_path = dirname( plugin_dir_path( __FILE__ ) ) . '/grav_components/';
-			$blog_src                     = $plugin_components_files_path . 'blog.md';
-			$blog_md                      = $pages_export_folder . 'blog/blog.md';
-
-			if ( ! file_exists( $blog_md ) ) {
-				wp_mkdir_p( $pages_export_folder . 'blog' );
-				copy( $blog_src, $blog_md );
-			}
-			break;
-
-		case 'product':
-			$page_folder = $pages_export_folder . 'products/' . $post->post_name . '/';
-			break;
-
-		default:
-			$page_folder = $pages_export_folder . $post->post_name . '/';
-	}
+	$page_folder = find_page_output_directory( $post, $pages_export_folder );
 
 	// Create directory.
 	wp_mkdir_p( $page_folder );
@@ -335,21 +348,24 @@ function render_post( $post, $export_dir ) {
 	// Copy featured image.
 	$featured_image = wp_get_attachment_url( get_post_thumbnail_id( $post->ID ) );
 	if ( $featured_image ) {
-		copy_media( $featured_image, $export_dir );
+		$header['media_order'] = basename( $featured_image );
+		$page_directory        = find_page_output_directory( $post, $export_dir . 'pages/' );
+		copy_media_to_data( $featured_image, $export_dir );
+		copy_media_to_page( $featured_image, $page_directory );
 	}
 
 	// Copy attached media.
 	$attached_media = get_attached_media( '', $post->ID );
 	foreach ( $attached_media as $media ) {
 		$source = wp_get_attachment_image_src( $media->ID, 'full' );
-		copy_media( $source[0], $export_dir );
+		copy_media_to_data( $source[0], $export_dir );
 	}
 
 	// Copy in-line images.
 	$images = get_original_images_from_post( $post->ID );
 	if ( $images ) {
 		foreach ( $images as $image ) {
-			copy_media( $image['truncated'], $export_dir );
+			copy_media_to_data( $image['truncated'], $export_dir );
 			if ( isset( $image['width'] ) ) {
 				// Remove image size suffix from image url, and re-apply image size in markdown.
 				$frontmatter = str_replace( $image['original'], $image['truncated'] . '?resize=' . $image['width'] . ',' . $image['height'], $frontmatter );
@@ -446,13 +462,34 @@ function convert_acf_field_data_to_grav( $field_data, $post, $export_dir ) {
 }
 
 /**
- * Moves a referenced WP image from the upload folder to
+ * Moves a referenced WP image from the upload folder to Grav's page directory.
+ *
+ * @param string $url WP media url.
+ * @param string $page_dir Base directory for exports.
+ * @return void
+ */
+function copy_media_to_page( $url, $page_dir ) {
+	// Source.
+	$upload             = wp_get_upload_dir();
+	$file_path          = str_replace( $upload['baseurl'], '', $url );
+	$file_path_exploded = explode( '/', $file_path );
+	$file_name          = $file_path_exploded[ count( $file_path_exploded ) - 1 ];
+
+	// Copy file.
+	wp_mkdir_p( $page_dir );
+	copy( WP_CONTENT_DIR . '/uploads' . $file_path, $page_dir . $file_name );
+}
+
+
+
+/**
+ * Moves a referenced WP image from the upload folder to Grav's data directory.
  *
  * @param string $url WP media url.
  * @param string $export_dir Base directory for exports.
  * @return void
  */
-function copy_media( $url, $export_dir ) {
+function copy_media_to_data( $url, $export_dir ) {
 	// Source.
 	$upload             = wp_get_upload_dir();
 	$file_path          = str_replace( $upload['baseurl'], '', $url );
