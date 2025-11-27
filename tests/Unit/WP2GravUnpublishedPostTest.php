@@ -66,22 +66,20 @@ class WP2GravUnpublishedPostTest extends TestCase {
 		require_once ABSPATH . 'wp-admin/includes/file.php';
 		require_once ABSPATH . 'wp-admin/includes/image.php';
 
-
-
 		// Generate page.
 		// todo: add taxonomy to page.
 		$taxonomy_id = get_cat_ID( 'Subjects' );
 
 		$draft_date = gmdate( 'Y-m-d', strtotime( '+1 year' ) );
 		$draft_args = array(
-			'post_title'    => 'Draft Ipsum',
+			'post_title'   => 'Draft Ipsum',
 			'post_content' => 'Draft ipsum dolor sit amet, consectetur adipiscing elit.',
-			'post_status'   => 'future',
-			'post_type'     => 'post',
-			'post_author'	=> 0
+			'post_status'  => 'future',
+			'post_type'    => 'post',
+			'post_author'  => 0,
 		);
 
-		$post_id        = wp_insert_post( $draft_args, true );
+		$post_id = wp_insert_post( $draft_args, true );
 		wp_set_post_terms(
 			$post_id,
 			'testing post',
