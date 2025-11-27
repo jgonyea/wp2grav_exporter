@@ -1,3 +1,12 @@
+# v0.4.1
+#  11/27/2025
+1. [](#new)
+    * Post revisions now export as markdown files in the same directory as the post/ page.
+2. [](#improved)
+
+3. [](#bugfix)
+    * Removed some extra debugging code left by accident.
+
 # v0.4.0
 #  11/27/2025
 1. [](#new)
