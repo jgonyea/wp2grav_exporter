@@ -115,10 +115,8 @@ function render_and_save_revisions( $post ) {
 		return;
 	}
 
-	$revision_dates = array();
 	foreach ( $revisions as $revision ) {
-		$revision_dates[] = $revision->post_modified;
-		$revision_render  = render_post( $revision );
+		$revision_render = render_post( $revision );
 		save_post( $revision, $revision_render, $pages_export_folder, true );
 	}
 }
