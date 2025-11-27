@@ -71,7 +71,8 @@ function wp2grav_export_posts( $args, $assoc_args ) {
 
 	// Iterate through posts.
 	foreach ( $posts as $post ) {
-		render_and_save_post_( $post );
+		render_and_save_revisions( $post );
+		render_and_save_post( $post );
 		render_and_save_comments( $post );
 		$progress_type->tick();
 	}
@@ -99,13 +100,38 @@ function render_and_save_comments( $post ) {
 		$wp_filesystem->put_contents( $page_folder . 'comments.yaml', $comments_render );
 	}
 }
+
+/**
+ * Renders post revisions content and then saves it.
+ *
+ * @param WP_Post $post Post to have its revisions rendered and saved.
+ * @return void
+ */
+function render_and_save_revisions( $post ) {
+	$pages_export_folder = get_export_dir() . 'pages/';
+
+	$revisions = wp_get_post_revisions( $post );
+	if ( ! $revisions ) {
+		return;
+	}
+
+	$revision_dates = array();
+	foreach ( $revisions as $revision ) {
+		$revision_dates[] = $revision->post_modified;
+		$revision_render  = render_post( $revision );
+		save_post( $revision, $revision_render, $pages_export_folder, true );
+	}
+}
+
+
+
 /**
  * Renders post content and then saves it.
  *
  * @param WP_Post $post Post to be rendered and saved.
  * @return void
  */
-function render_and_save_post_( $post ) {
+function render_and_save_post( $post ) {
 	$export_dir          = get_export_dir();
 	$pages_export_folder = $export_dir . 'pages/';
 
@@ -209,21 +235,34 @@ function find_comments( $id ) {
 /**
  * Save rendered markdown to new folder.
  *
- * @param WP_Post $post WordPress post.
+ * @param WP_Post $post WordPress post/ revision.
  * @param string  $page_render Markdown content rendered from WordPress Post.
  * @param string  $pages_export_folder Root pages export directory.
+ * @param bool    $is_revision Whether the post to be saved is a revision or not.
  * @return void
  */
-function save_post( $post, $page_render, $pages_export_folder ) {
+function save_post( $post, $page_render, $pages_export_folder, $is_revision = false ) {
 	global $wp_filesystem;
+	$revision_date = $post->post_modified;
 
-	$page_folder = $pages_export_folder . find_page_output_directory( $post );
+	if ( ! $is_revision ) {
+		$page_folder = $pages_export_folder . find_page_output_directory( $post );
+	} else {
+		$parent_post = get_post( $post->post_parent );
+		$page_folder = $pages_export_folder . find_page_output_directory( $parent_post );
+	}
 
 	// Create directory.
 	wp_mkdir_p( $page_folder );
 
 	// Save content.
-	$wp_filesystem->put_contents( $page_folder . 'wp_' . $post->post_type . '.md', $page_render );
+	if ( ! $is_revision ) {
+		$filename = 'wp_' . $post->post_type . '.md';
+	} else {
+		$filename  = 'wp_' . $parent_post->post_type . '.md';
+		$filename .= '.' . gmdate( 'Ymd-His', strtotime( $revision_date ) ) . '.rev';
+	}
+	$wp_filesystem->put_contents( $page_folder . $filename, $page_render );
 }
 
 /**
