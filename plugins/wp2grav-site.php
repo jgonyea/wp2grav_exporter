@@ -26,7 +26,7 @@ function wp2grav_export_site() {
 	}
 
 	$export_plugins_dir = plugin_dir_path( __FILE__ );
-	$export_dir         = getExportDir();
+	$export_dir         = get_export_dir();
 	$config_export_dir  = $export_dir . 'config/';
 
 	if (

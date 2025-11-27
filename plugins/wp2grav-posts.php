@@ -31,7 +31,7 @@ function wp2grav_export_posts( $args, $assoc_args ) {
 	}
 
 	$export_plugins_dir  = plugin_dir_path( __FILE__ );
-	$export_dir          = getExportDir();
+	$export_dir          = get_export_dir();
 	$pages_export_folder = $export_dir . 'pages/';
 	$files_export_folder = $export_dir . 'data/wp-content/';
 
@@ -49,7 +49,7 @@ function wp2grav_export_posts( $args, $assoc_args ) {
 	if ( isset( $assoc_args['id'] ) ) {
 		// Allow exporting of single post.
 		$post = get_post( $assoc_args['id'] );
-		if ( $post ){
+		if ( $post ) {
 			$posts[] = $post;
 		}
 	} else {
@@ -71,46 +71,83 @@ function wp2grav_export_posts( $args, $assoc_args ) {
 
 	// Iterate through posts.
 	foreach ( $posts as $post ) {
+		render_and_save_post_( $post );
+		render_and_save_comments( $post );
 		$progress_type->tick();
-		if ( ! $post->post_name ) {
-			continue;
-		}
-		$page_output = render_post( get_post( $post->ID ) );
-
-		$comments = find_comments( $post->ID );
-
-		if ( $comments ) {
-			$comments_output = render_comments( $post->ID, $comments );
-		} else {
-			$comments_output = null;
-		}
-
-		save_post( $post, $page_output, $comments_output, $pages_export_folder );
 	}
 	$progress_type->finish();
 
-
-
 	WP_CLI::success( 'Saved Complete!  ' . count( $posts ) . " posts exported to $pages_export_folder" );
+}
+
+/**
+ * Renders comments content and then saves it.
+ *
+ * @param WP_Post $post Post/ Page with possible comments.
+ * @return void
+ */
+function render_and_save_comments( $post ) {
+	global $wp_filesystem;
+	$export_dir          = get_export_dir();
+	$pages_export_folder = $export_dir . 'pages/';
+	$page_folder         = $pages_export_folder . find_page_output_directory( $post );
+
+	$comments = find_comments( $post->ID );
+
+	if ( $comments ) {
+		$comments_render = render_comments( $post->ID, $comments );
+		$wp_filesystem->put_contents( $page_folder . 'comments.yaml', $comments_render );
+	}
+}
+/**
+ * Renders post content and then saves it.
+ *
+ * @param WP_Post $post Post to be rendered and saved.
+ * @return void
+ */
+function render_and_save_post_( $post ) {
+	$export_dir          = get_export_dir();
+	$pages_export_folder = $export_dir . 'pages/';
+
+	$page_render = render_post( $post );
+
+	save_post( $post, $page_render, $pages_export_folder );
 }
 
 /**
  * Calculate the final page destination directory.
  *
  * @param WP_Post $post WordPress post.
- * @param string  $pages_export_folder Base directory of pages.
  * @return string Final page destination directory.
  */
-function find_page_output_directory( $post, $pages_export_folder ) {
-	$page_folder = '';
+function find_page_output_directory( $post ) {
+	$pages_export_folder = get_export_dir() . 'pages/';
+	$output_directory    = '';
+
+	if ( $post->post_parent ) {
+		$output_directory .= find_page_output_directory( get_post( $post->post_parent ) );
+	}
+
+	if ( 'page' === $post->post_type && empty( $post->post_name ) ) {
+		$slug        = sanitize_title( $post->post_title );
+		$unique_slug = wp_unique_post_slug(
+			$slug,
+			$post->ID,
+			$post->post_status,
+			$post->post_type,
+			$post->post_parent
+		);
+	}
+
+	if ( 'trash' === $post->post_status ) {
+		// Drop the '__trashed' from post_name.
+		$output_directory = substr( 'z_trashed/' . $post->post_name, 0, -9 );
+		return $output_directory . '/';
+	}
 
 	switch ( $post->post_type ) {
-		case 'trash':
-			$page_folder = $pages_export_folder . 'z_trashed/' . $post->post_name . '/';
-			break;
-
 		case 'post':
-			$page_folder = $pages_export_folder . 'blog/' . $post->post_name . '/';
+			$output_directory = 'blog/' . $post->post_name . '/';
 
 			// Generate blog.md if not present.
 			$plugin_components_files_path = dirname( plugin_dir_path( __FILE__ ) ) . '/grav_components/';
@@ -124,14 +161,18 @@ function find_page_output_directory( $post, $pages_export_folder ) {
 			break;
 
 		case 'product':
-			$page_folder = $pages_export_folder . 'products/' . $post->post_name . '/';
+			$output_directory = 'products/' . $post->post_name . '/';
 			break;
 
 		default:
-			$page_folder = $pages_export_folder . $post->post_name . '/';
+			if ( ! empty( $post->post_name ) ) {
+				$output_directory .= $post->post_name . '/';
+			} else {
+				$output_directory .= $unique_slug . '/';
+			}
 	}
 
-	return $page_folder;
+	return $output_directory;
 }
 
 
@@ -170,40 +211,29 @@ function find_comments( $id ) {
  *
  * @param WP_Post $post WordPress post.
  * @param string  $page_render Markdown content rendered from WordPress Post.
- * @param string  $comments_render YAML content rendered from WordPress comments.
- * @param string  $pages_export_folder Destination directory.
+ * @param string  $pages_export_folder Root pages export directory.
  * @return void
  */
-function save_post( $post, $page_render, $comments_render, $pages_export_folder ) {
+function save_post( $post, $page_render, $pages_export_folder ) {
 	global $wp_filesystem;
-	if (! $post->post_parent ){
-		$page_folder = find_page_output_directory( $post, $pages_export_folder );
-	} else {
-		// todo: Need to find where to save pages with parent pages, probably recursively.
-		return;
-	}
+
+	$page_folder = $pages_export_folder . find_page_output_directory( $post );
 
 	// Create directory.
 	wp_mkdir_p( $page_folder );
 
 	// Save content.
 	$wp_filesystem->put_contents( $page_folder . 'wp_' . $post->post_type . '.md', $page_render );
-
-	if ( $comments_render ) {
-			$wp_filesystem->put_contents( $page_folder . 'comments.yaml', $comments_render );
-	}
 }
 
 /**
  * Converts WP post to yaml markdown text.
  *
- * @param int    $id WP post ID.
- * @param string $export_dir Destination folder.
- * @param array  $comments array of WP_Comment e;ements.
+ * @param int   $id WP post ID.
+ * @param array $comments Array of WP_Comment elements.
  * @return string Converted comments.
  */
 function render_comments( $id, $comments ) {
-	$export_dir = getExportDir();
 	$comments_yaml = array();
 
 	foreach ( $comments as $comment ) {
@@ -272,10 +302,11 @@ function render_comments( $id, $comments ) {
  * @return string Converted page.
  */
 function render_post( $post ) {
-	$header      = null;
-	$frontmatter = null;
-	$base_url    = get_site_url();
-	$export_dir = getExportDir();
+	$header              = null;
+	$frontmatter         = null;
+	$base_url            = get_site_url();
+	$export_dir          = get_export_dir();
+	$files_export_folder = $export_dir . 'data/wp-content/';
 
 	// Configure export directories.
 	$pages_export_folder = $export_dir . 'pages/';
@@ -349,9 +380,9 @@ function render_post( $post ) {
 	$featured_image = wp_get_attachment_url( get_post_thumbnail_id( $post->ID ) );
 	if ( $featured_image ) {
 		$header['media_order'] = basename( $featured_image );
-		$header['hero_image'] = basename( $featured_image );
-		$page_directory        = find_page_output_directory( $post, $export_dir . 'pages/' );
-		copy_media_to_data( $featured_image, $export_dir );
+		$header['hero_image']  = basename( $featured_image );
+		$page_directory        = get_export_dir() . 'pages/' . find_page_output_directory( $post );
+		copy_media_to_data( $featured_image );
 		copy_media_to_page( $featured_image, $page_directory );
 	}
 
@@ -481,30 +512,26 @@ function copy_media_to_page( $url, $page_dir ) {
 	copy( WP_CONTENT_DIR . '/uploads' . $file_path, $page_dir . $file_name );
 }
 
-
-
 /**
  * Moves a referenced WP image from the upload folder to Grav's data directory.
  *
  * @param string $url WP media url.
- * @param string $export_dir Base directory for exports.
  * @return void
  */
-function copy_media_to_data( $url, $export_dir ) {
-	// Source.
+function copy_media_to_data( $url ) {
+	// Find Source.
 	$upload             = wp_get_upload_dir();
 	$file_path          = str_replace( $upload['baseurl'], '', $url );
 	$file_path_exploded = explode( '/', $file_path );
 	$file_name          = $file_path_exploded[ count( $file_path_exploded ) - 1 ];
 
-	// Destination.
-	$export_dir              = $export_dir . 'data/wp-content/uploads';
+	// Create Destination.
+	$export_dir              = get_export_dir() . 'data/wp-content/uploads';
 	$grav_file_subdir        = substr( $file_path, 0, -( strlen( $file_name ) ) );
 	$absolute_grav_file_path = $export_dir . $grav_file_subdir;
-	$absolute_grav_file_path = $export_dir . $grav_file_subdir;
+	wp_mkdir_p( $absolute_grav_file_path );
 
 	// Copy file.
-	wp_mkdir_p( $absolute_grav_file_path );
 	copy( WP_CONTENT_DIR . '/uploads' . $file_path, $absolute_grav_file_path . $file_name );
 }
 

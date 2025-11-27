@@ -33,6 +33,8 @@
       ],
       "pre-commit": [
         "clear",
+        "echo 'Removing previous test files'",
+        "composer reset",
         "vendor/bin/phpunit",
         "vendor/bin/phpcs tests",
         "vendor/bin/phpcs plugins",

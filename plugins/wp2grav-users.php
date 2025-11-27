@@ -26,9 +26,9 @@ function wp2grav_export_users() {
 		WP_CLI::line( WP_CLI::colorize( '%YBeginning user export%n ' ) );
 	}
 
-	$export_folder = getExportDir() . 'accounts/';
-	if ( ! wp_mkdir_p( $export_folder ) ) {
-		WP_CLI::error( "Could not create accounts export folder at $export_folder" );
+	$accounts_dir = get_export_dir() . 'accounts/';
+	if ( ! wp_mkdir_p( $accounts_dir ) ) {
+		WP_CLI::error( "Could not create accounts export folder at $accounts_dir" );
 		die();
 	}
 
@@ -73,14 +73,14 @@ function wp2grav_export_users() {
 		$account                    .= 'login_attempts: {  }';
 		$filename                    = convert_username_wp_to_grav( $user );
 		try {
-			if ( ! $wp_filesystem->put_contents( $export_folder . $filename . '.yaml', $account ) ) {
+			if ( ! $wp_filesystem->put_contents( $accounts_dir . $filename . '.yaml', $account ) ) {
 				throw new Exception( 'Could not save ' . $filename . '.yaml export file' );
 			}
 		} catch ( Exception $e ) {
 			WP_CLI::error( $e->getMessage(), $exit = true );
 		}
 	}
-	WP_CLI::success( 'Saved Complete!  ' . count( $users ) . " user accounts exported to $export_folder" );
+	WP_CLI::success( 'Saved Complete!  ' . count( $users ) . " user accounts exported to $accounts_dir" );
 	$progress->finish();
 }
 

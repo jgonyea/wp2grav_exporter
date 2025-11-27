@@ -102,11 +102,14 @@ function convert_username_wp_to_grav( $user, $user_char_min_limit = 4, $user_cha
  * @return array WP posts search results.
  */
 function wp2grav_find_posts_of_type( $type = 'post' ) {
+	$stati = get_post_stati();
+	// Don't export auto-drafts.
+	unset( $stati['auto-draft'] );
 	$posts = get_posts(
 		array(
 			'post_type'   => $type,
 			'numberposts' => -1,
-			'post_status' => get_post_stati(),
+			'post_status' => $stati,
 		)
 	);
 
@@ -118,6 +121,6 @@ function wp2grav_find_posts_of_type( $type = 'post' ) {
  *
  * @return string Export directory.
  */
-function getExportDir() {
-    return WP_CONTENT_DIR . '/uploads/wp2grav-exports/user-' . gmdate( 'Ymd' ) . '/';
+function get_export_dir() {
+	return WP_CONTENT_DIR . '/uploads/wp2grav-exports/user-' . gmdate( 'Ymd' ) . '/';
 }

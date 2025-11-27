@@ -1,8 +1,8 @@
 name: Wordpress Exporter Helper
 slug: wordpress-exporter-helper
 type: plugin
-version: 0.3.0
-description: Companion plugin for Wordpress plugin `wp2grav`
+version: 0.4.0
+description: Companion plugin for Wordpress plugin `wp2grav_exporter`
 icon: plug
 author:
   name: Jeremy Gonyea

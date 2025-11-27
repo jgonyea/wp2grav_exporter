@@ -25,7 +25,7 @@ function wp2grav_export_post_types() {
 	}
 
 	$export_plugins_dir = plugin_dir_path( __FILE__ );
-	$export_folder      = getExportDir();
+	$export_folder      = get_export_dir();
 
 	$plugin_export_folder     = 'plugins/wordpress-exporter-helper/';
 	$templates_export_folder  = $plugin_export_folder . 'templates/';
