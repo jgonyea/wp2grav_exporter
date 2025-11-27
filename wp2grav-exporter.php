@@ -101,7 +101,7 @@ function convert_username_wp_to_grav( $user, $user_char_min_limit = 4, $user_cha
  * @param string $type Specific post type to search for.
  * @return array WP posts search results.
  */
-function wp2grav_find_posts( $type = 'post' ) {
+function wp2grav_find_posts_of_type( $type = 'post' ) {
 	$posts = get_posts(
 		array(
 			'post_type'   => $type,

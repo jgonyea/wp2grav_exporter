@@ -72,7 +72,7 @@ function wp2grav_export_post_types() {
 	foreach ( $post_types as $post_type ) {
 		global $wp_filesystem;
 		$progress_type->tick();
-		$posts = wp2grav_find_posts( $post_type );
+		$posts = wp2grav_find_posts_of_type( $post_type );
 
 		// Creates a new progress bar.
 		$progress_posts = \WP_CLI\Utils\make_progress_bar( ' |- Parsing ' . count( $posts ) . ' posts from post_type: ' . $post_type, count( $posts ), $interval = 100 );

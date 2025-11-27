@@ -44,57 +44,52 @@ function wp2grav_export_posts( $args, $assoc_args ) {
 		die();
 	}
 
-	// Allow exporting of single post.
+	// Posts to export.
+	$posts = array();
 	if ( isset( $assoc_args['id'] ) ) {
+		// Allow exporting of single post.
 		$post = get_post( $assoc_args['id'] );
-		WP_CLI::line( 'Exporting post: "' . $post->post_title . '"' );
-		if ( null !== $post ) {
-			$page_output = render_post( get_post( $post->ID ), $export_dir );
-			$comments    = find_comments( $post->ID );
-
-			if ( $comments ) {
-				$comments_output = render_comments( $post->ID, $export_dir, $comments );
-			} else {
-				$comments_output = null;
-			}
-
-			save_post( $post, $page_output, $comments_output, $pages_export_folder );
-			$posts = array( $post );
-		} else {
-			$posts = array();
+		if ( $post ){
+			$posts[] = $post;
 		}
 	} else {
-		// Find all custom post_types.
+		// Find all post_types.
 		$post_types = get_post_types( array( 'public' => true ) );
 		unset( $post_types['attachment'] );
 
 		// Iterate through all post types.
 		foreach ( $post_types as $post_type ) {
-			$posts = wp2grav_find_posts( $post_type );
-			// Creates a new progress bar.
-			$progress_type = \WP_CLI\Utils\make_progress_bar( ' |- Generating ' . count( $posts ) . ' Grav pages from post_type "' . $post_type . '".', count( $posts ), $interval = 100 );
-
-			// Iterate through posts of post_type.
-			foreach ( $posts as $post ) {
-				$progress_type->tick();
-				if ( ! $post->post_name ) {
-					continue;
-				}
-				$page_output = render_post( get_post( $post->ID ), $export_dir );
-
-				$comments = find_comments( $post->ID );
-
-				if ( $comments ) {
-					$comments_output = render_comments( $post->ID, $export_dir, $comments );
-				} else {
-					$comments_output = null;
-				}
-
-				save_post( $post, $page_output, $comments_output, $pages_export_folder );
+			$posts_of_type = wp2grav_find_posts_of_type( $post_type );
+			foreach ( $posts_of_type as $post ) {
+				$posts[] = $post;
 			}
-			$progress_type->finish();
 		}
 	}
+
+	// Creates a new progress bar.
+	$progress_type = \WP_CLI\Utils\make_progress_bar( ' |- Generating ' . count( $posts ) . ' posts.', count( $posts ), $interval = 100 );
+
+	// Iterate through posts.
+	foreach ( $posts as $post ) {
+		$progress_type->tick();
+		if ( ! $post->post_name ) {
+			continue;
+		}
+		$page_output = render_post( get_post( $post->ID ) );
+
+		$comments = find_comments( $post->ID );
+
+		if ( $comments ) {
+			$comments_output = render_comments( $post->ID, $comments );
+		} else {
+			$comments_output = null;
+		}
+
+		save_post( $post, $page_output, $comments_output, $pages_export_folder );
+	}
+	$progress_type->finish();
+
+
 
 	WP_CLI::success( 'Saved Complete!  ' . count( $posts ) . " posts exported to $pages_export_folder" );
 }
@@ -181,7 +176,12 @@ function find_comments( $id ) {
  */
 function save_post( $post, $page_render, $comments_render, $pages_export_folder ) {
 	global $wp_filesystem;
-	$page_folder = find_page_output_directory( $post, $pages_export_folder );
+	if (! $post->post_parent ){
+		$page_folder = find_page_output_directory( $post, $pages_export_folder );
+	} else {
+		// todo: Need to find where to save pages with parent pages, probably recursively.
+		return;
+	}
 
 	// Create directory.
 	wp_mkdir_p( $page_folder );
