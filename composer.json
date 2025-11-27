@@ -26,11 +26,15 @@
         "sudo apt install subversion -y",
         "cd /var/www/html/wp-content/plugins/wp2grav_exporter",
         "./bin/install-wp-tests.sh wpTest root root db:3306 latest",
-        "rsync -ravh /tmp/wordpress-tests-lib /var/www/html/tmp --delete",
+        "rsync -ravh /tmp/wordpress-tests-lib /var/www/html/tmp --delete"
+      ],
+      "reset": [
         "rm -rf /tmp/wordpress/wp-content/uploads/*"
       ],
       "pre-commit": [
         "clear",
+        "echo 'Removing previous test files'",
+        "composer reset",
         "vendor/bin/phpunit",
         "vendor/bin/phpcs tests",
         "vendor/bin/phpcs plugins",

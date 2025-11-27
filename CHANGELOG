@@ -1,3 +1,19 @@
+# v0.4.0
+#  11/27/2025
+1. [](#new)
+    * PHPUnit tests for all plugins.
+    * `composer pre-commit` runs pre-commit hooks (phpunit and phpcs).
+    * `composer setup-ddev` sets up a phpunit testing environment, assumes a ddev environment, but could possibly work elsewhere.
+2. [](#improved)
+    * PHPCS fixes across nearly the whole plugin.
+    * Featured images now save alongside their respective pages.
+    * Trashed pages/ posts now are saved to the z_trashed directory for easier management.
+3. [](#bugfix)
+    * Taxonomies are now exported via the wp2grav-site plugin.
+    * Draft posts now export correctly.
+    * Pages and child pages now export properly, even if they are drafts.
+
+
 # v0.2.4
 #  02/17/2025
 

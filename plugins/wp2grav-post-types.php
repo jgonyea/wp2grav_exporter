@@ -25,7 +25,7 @@ function wp2grav_export_post_types() {
 	}
 
 	$export_plugins_dir = plugin_dir_path( __FILE__ );
-	$export_folder      = WP_CONTENT_DIR . '/uploads/wp2grav-exports/user-' . gmdate( 'Ymd' ) . '/';
+	$export_folder      = get_export_dir();
 
 	$plugin_export_folder     = 'plugins/wordpress-exporter-helper/';
 	$templates_export_folder  = $plugin_export_folder . 'templates/';
@@ -72,7 +72,7 @@ function wp2grav_export_post_types() {
 	foreach ( $post_types as $post_type ) {
 		global $wp_filesystem;
 		$progress_type->tick();
-		$posts = wp2grav_find_posts( $post_type );
+		$posts = wp2grav_find_posts_of_type( $post_type );
 
 		// Creates a new progress bar.
 		$progress_posts = \WP_CLI\Utils\make_progress_bar( ' |- Parsing ' . count( $posts ) . ' posts from post_type: ' . $post_type, count( $posts ), $interval = 100 );

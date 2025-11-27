@@ -44,7 +44,7 @@ class WPGravFindPostsTest extends WP_UnitTestCase {
 		$unpublished_post = $this->factory->post->create_and_get( $unpublished_args );
 		$future_post      = $this->factory->post->create_and_get( $future_args );
 
-		$posts = wp2grav_find_posts();
+		$posts = wp2grav_find_posts_of_type();
 		$this->assertEquals( 3, count( $posts ) );
 	}
 }
