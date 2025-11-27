@@ -26,7 +26,7 @@ function wp2grav_export_site() {
 	}
 
 	$export_plugins_dir = plugin_dir_path( __FILE__ );
-	$export_dir         = WP_CONTENT_DIR . '/uploads/wp2grav-exports/user-' . gmdate( 'Ymd' ) . '/';
+	$export_dir         = getExportDir();
 	$config_export_dir  = $export_dir . 'config/';
 
 	if (

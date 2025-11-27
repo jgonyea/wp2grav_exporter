@@ -112,3 +112,12 @@ function wp2grav_find_posts( $type = 'post' ) {
 
 	return $posts;
 }
+
+/**
+ * Get the default export directory.
+ *
+ * @return string Export directory.
+ */
+function getExportDir() {
+    return WP_CONTENT_DIR . '/uploads/wp2grav-exports/user-' . gmdate( 'Ymd' ) . '/';
+}

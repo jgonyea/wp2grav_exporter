@@ -31,7 +31,7 @@ function wp2grav_export_posts( $args, $assoc_args ) {
 	}
 
 	$export_plugins_dir  = plugin_dir_path( __FILE__ );
-	$export_dir          = WP_CONTENT_DIR . '/uploads/wp2grav-exports/user-' . gmdate( 'Ymd' ) . '/';
+	$export_dir          = getExportDir();
 	$pages_export_folder = $export_dir . 'pages/';
 	$files_export_folder = $export_dir . 'data/wp-content/';
 
@@ -40,7 +40,7 @@ function wp2grav_export_posts( $args, $assoc_args ) {
 	! wp_mkdir_p( $pages_export_folder ) ||
 	! wp_mkdir_p( $files_export_folder )
 	) {
-		WP_CLI::error( 'Post Types: Could not create export folders ' );
+		WP_CLI::error( 'Pages: Could not create export folders ' );
 		die();
 	}
 
@@ -202,8 +202,8 @@ function save_post( $post, $page_render, $comments_render, $pages_export_folder 
  * @param array  $comments array of WP_Comment e;ements.
  * @return string Converted comments.
  */
-function render_comments( $id, $export_dir, $comments ) {
-	$new_id        = $id;
+function render_comments( $id, $comments ) {
+	$export_dir = getExportDir();
 	$comments_yaml = array();
 
 	foreach ( $comments as $comment ) {
@@ -269,13 +269,13 @@ function render_comments( $id, $export_dir, $comments ) {
  * Converts WP post to markdown text.
  *
  * @param WP_Post $post WP page.
- * @param string  $export_dir Destination folder.
  * @return string Converted page.
  */
-function render_post( $post, $export_dir ) {
+function render_post( $post ) {
 	$header      = null;
 	$frontmatter = null;
 	$base_url    = get_site_url();
+	$export_dir = getExportDir();
 
 	// Configure export directories.
 	$pages_export_folder = $export_dir . 'pages/';
