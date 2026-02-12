@@ -17,6 +17,67 @@
  */
 require 'vendor/autoload.php';
 
+add_action( 'admin_menu', 'wp2grav_admin_menu' );
+
+// Create custom admin menu.
+function wp2grav_admin_menu() {
+	add_submenu_page(
+		'tools.php',							// parent slug
+		'WP2Grav Expoter Main Page',        // Page title
+		'WP2Grav Exporter',              // Menu title
+		'manage_options',           // Capability (who can access)
+		'wp2grav-exporter',           // Menu slug
+		'wp2grav_admin_page_callback',    // Function to display page content
+		15,								// position
+	);
+}
+
+function wp2grav_admin_page_callback() {
+	?>
+		<form action="<?php echo esc_url( admin_url( 'export-personal-data.php' ) ); ?>" method="post" class="wp-privacy-request-form">
+		<h2><?php esc_html_e( 'WP2Grav Expoter' ); ?></h2>
+		<div class="wp-wp2grav-data-request" style="width: 75%;">
+			<label for="bo0ofw4v5pk" class="block text-sm font-medium mb-1 text-foreground/90">Please select what WordPress items you would like to export</label>
+			<div class="space-y-2">
+				<div class="flex items-center gap-2">
+					<input id="bo0ofw4v5pk-4" type="checkbox" name="bo0ofw4v5pk[]">
+					<label for="bo0ofw4v5pk-4">-- All --</label>
+				</div>
+				<div class="flex items-center gap-2">
+					<input id="bo0ofw4v5pk-0" type="checkbox" name="bo0ofw4v5pk[]">
+					<label for="bo0ofw4v5pk-0">Users</label>
+				</div>
+				<div class="flex items-center gap-2">
+					<input id="bo0ofw4v5pk-1" type="checkbox" name="bo0ofw4v5pk[]">
+					<label for="bo0ofw4v5pk-1">Roles</label>
+				</div>
+				<div class="flex items-center gap-2">
+					<input id="bo0ofw4v5pk-2" type="checkbox" name="bo0ofw4v5pk[]">
+					<label for="bo0ofw4v5pk-2">Posts</label>
+				</div>
+				<div class="flex items-center gap-2">
+						<input id="bo0ofw4v5pk-3" type="checkbox" name="bo0ofw4v5pk[]">
+						<label for="bo0ofw4v5pk-3">Post Types</label>
+				</div>
+				<div class="flex items-center gap-2">
+					<input id="bo0ofw4v5pk-4" type="checkbox" name="bo0ofw4v5pk[]">
+					<label for="bo0ofw4v5pk-4">Site Configuration</label>
+				</div>
+			</div>
+
+			<p class="submit">
+				<?php submit_button( __( 'Send Request' ), 'secondary', 'submit', false ); ?>
+			</p>
+		</div>
+		<?php wp_nonce_field( 'wp2grav-data-request' ); ?>
+		<input type="hidden" name="action" value="add_export_personal_data_request" />
+		<input type="hidden" name="type_of_action" value="export_personal_data" />
+	</form>
+	<hr />
+
+	<?php
+}
+
 if ( defined( 'WP_CLI' ) && WP_CLI ) {
 	$plugin_dir = plugin_dir_path( __FILE__ ) . 'plugins';
 	// Load plugins.
@@ -124,3 +185,4 @@ function wp2grav_find_posts_of_type( $type = 'post' ) {
 function get_export_dir() {
 	return WP_CONTENT_DIR . '/uploads/wp2grav-exports/user-' . gmdate( 'Ymd' ) . '/';
 }
+	
