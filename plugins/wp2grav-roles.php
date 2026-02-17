@@ -27,13 +27,21 @@ function wp2grav_export_roles() {
 	}
 	$export_folder = get_export_dir() . 'config/';
 	if ( ! wp_mkdir_p( $export_folder ) ) {
-		WP_CLI::error( 'Could not create export folder' );
-		die();
+		if ( defined( 'WP_CLI' ) && WP_CLI ) {
+			WP_CLI::error( 'Could not create export folder' );
+		}
+		throw new Exception( 'Could not create export folder' );
 	}
 
 	$wp_roles = wp_roles()->roles;
 	$groups   = array();
-	$progress = \WP_CLI\Utils\make_progress_bar( ' |- Generating ' . count( $wp_roles ) . ' user roles', count( $wp_roles ), $interval = 100 );
+
+	if ( defined( 'WP_CLI' ) && WP_CLI ) {
+		$progress = \WP_CLI\Utils\make_progress_bar( ' |- Generating ' . count( $wp_roles ) . ' user roles', count( $wp_roles ), $interval = 100 );
+	} else {
+		$progress = new Wp2grav_Noop_Progress();
+	}
+
 	foreach ( $wp_roles as $key => $role ) {
 		$role_name                                       = 'wp_' . convert_role_wp_to_grav( $key );
 		$groups[ $role_name ]['icon']                    = 'cog';
@@ -67,12 +75,14 @@ function wp2grav_export_roles() {
 	}
 	$group_content = Yaml::dump( $groups, 20, 4 );
 
-	try {
-		if ( ! $wp_filesystem->put_contents( $export_folder . '/groups.yaml', $group_content ) ) {
-			throw new Exception( 'Could not save groups.yaml export file' );
+	if ( ! $wp_filesystem->put_contents( $export_folder . '/groups.yaml', $group_content ) ) {
+		if ( defined( 'WP_CLI' ) && WP_CLI ) {
+			WP_CLI::error( 'Could not save groups.yaml export file' );
 		}
-	} catch ( Exception $e ) {
-		WP_CLI::error( $e->getMessage(), $exit = true );
+		throw new Exception( 'Could not save groups.yaml export file' );
 	}
-	WP_CLI::success( ( count( $wp_roles ) ) . ' roles exported' );
+
+	if ( defined( 'WP_CLI' ) && WP_CLI ) {
+		WP_CLI::success( ( count( $wp_roles ) ) . ' roles exported' );
+	}
 }

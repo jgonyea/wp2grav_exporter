@@ -285,7 +285,7 @@ class WP2GravPostTest extends TestCase {
 
 		// Assert page content.
 		$this->assertEquals(
-			"\nLorem ipsum dolor sit amet, consectetur adipiscing elit. \n![Inline Image Test](user://data/wp-content/uploads/" . date("Y") . "/" . date("m") . "/inline-image.png)\n Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+			"\nLorem ipsum dolor sit amet, consectetur adipiscing elit. \n![Inline Image Test](user://data/wp-content/uploads/" . gmdate( 'Y' ) . '/' . gmdate( 'm' ) . "/inline-image.png)\n Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
 			$content,
 			'Incorrect page content'
 		);

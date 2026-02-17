@@ -17,16 +17,38 @@
  */
 require 'vendor/autoload.php';
 
+// Custom plugin actions.
+add_action( 'admin_menu', 'wp2grav_admin_menu' );
+add_action( 'admin_enqueue_scripts', 'wp2grav_enqueue_admin_assets' );
+add_action( 'wp_ajax_wp2grav_run_export', 'wp2grav_ajax_run_export' );
+add_action( 'wp_ajax_wp2grav_delete_export', 'wp2grav_ajax_delete_export' );
+
+/**
+ * No-op progress bar for non-CLI contexts.
+ */
+class Wp2grav_Noop_Progress {
+	/**
+	 * No-op tick.
+	 */
+	public function tick() {}
+
+	/**
+	 * No-op finish.
+	 */
+	public function finish() {}
+}
+
+// Load plugin files for both CLI and admin contexts.
+$plugin_dir = plugin_dir_path( __FILE__ ) . 'plugins';
+$files      = glob( $plugin_dir . '/wp2grav-*.php' );
+
+foreach ( $files as $file ) {
+	require_once $file;
+}
+
+// Register WP-CLI commands when in CLI context.
 if ( defined( 'WP_CLI' ) && WP_CLI ) {
-	$plugin_dir = plugin_dir_path( __FILE__ ) . 'plugins';
-	// Load plugins.
-
-	$files = glob( $plugin_dir . '/wp2grav-*.php' );
-
 	foreach ( $files as $file ) {
-		// Import plugins.
-		require_once $file;
-
 		// Derive expected function names from filenames.
 		$plugin_name          = substr( $file, strlen( $plugin_dir ) + 1 );
 		$plugin_name          = substr( $plugin_name, 0, -4 );
@@ -37,6 +59,195 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
 		// Register commands with wp-cli.
 		WP_CLI::add_command( $plugin_name, 'wp2grav_export_' . $plugin_name_imploded );
 	}
+}
+
+
+/**
+ * Enqueues CSS and JS assets for the WP2Grav admin page.
+ *
+ * Loads only on the plugin's own admin page and passes the security nonce
+ * to JavaScript via wp_localize_script.
+ *
+ * @param string $hook The current admin page hook suffix.
+ */
+function wp2grav_enqueue_admin_assets( $hook ) {
+	if ( 'tools_page_wp2grav-exporter' !== $hook ) {
+		return;
+	}
+	$plugin_url = plugin_dir_url( __FILE__ );
+	wp_enqueue_style( 'wp2grav-admin', $plugin_url . 'assets/admin.css', array(), '1.0.0' );
+	wp_enqueue_script( 'wp2grav-admin', $plugin_url . 'assets/admin.js', array(), '1.0.0', true );
+	wp_localize_script(
+		'wp2grav-admin',
+		'wp2gravAdmin',
+		array(
+			'nonce' => wp_create_nonce( 'wp2grav_export_nonce' ),
+		)
+	);
+}
+
+/**
+ * Registers the WP2Grav Exporter submenu page under the Tools menu.
+ */
+function wp2grav_admin_menu() {
+	add_submenu_page(
+		'tools.php',
+		'WP2Grav Exporter Main Page',
+		'WP2Grav Exporter',
+		'manage_options',
+		'wp2grav-exporter',
+		'wp2grav_admin_page_callback',
+		15
+	);
+}
+
+/**
+ * Renders the WP2Grav Exporter admin page.
+ *
+ * Outputs the export directory, individual exporter buttons, and a results
+ * area that is populated via AJAX after each export action.
+ */
+function wp2grav_admin_page_callback() {
+	$export_dir = get_export_dir();
+	?>
+	<div class="wrap">
+		<h1>WP2Grav Exporter</h1>
+		<p>Export your WordPress content for use in a GravCMS instance.</p>
+
+		<div class="card" style="max-width: 800px;">
+			<h2>Export Directory</h2>
+			<p><code><?php echo esc_html( $export_dir ); ?></code></p>
+			<?php
+			$exports_base = dirname( rtrim( $export_dir, '/' ) );
+			if ( is_dir( $exports_base ) ) {
+				$siblings = glob( $exports_base . '/user-*', GLOB_ONLYDIR );
+				if ( ! empty( $siblings ) ) {
+					rsort( $siblings );
+					echo '<p><strong>Previous exports:</strong></p><ul>';
+					foreach ( $siblings as $sibling ) {
+						$label = basename( $sibling );
+						echo '<li><code>' . esc_html( $label ) . '</code> <button class="button button-small wp2grav-delete-btn" data-folder="' . esc_attr( $label ) . '">Delete</button></li>';
+					}
+					echo '</ul>';
+				}
+			}
+			?>
+		</div>
+
+		<div class="card" style="max-width: 800px;">
+			<h2>Individual Plugin Exports</h2>
+			<p>Run each exporter individually:</p>
+			<p>
+				<button class="button button-secondary wp2grav-export-btn" data-exporter="posts">Export Posts</button>
+				<button class="button button-secondary wp2grav-export-btn" data-exporter="post_types">Export Post Types</button>
+				<button class="button button-secondary wp2grav-export-btn" data-exporter="users">Export Users</button>
+				<button class="button button-secondary wp2grav-export-btn" data-exporter="roles">Export User Roles</button>
+				<button class="button button-secondary wp2grav-export-btn" data-exporter="site">Export Site Configuration</button>
+			</p>
+		</div>
+
+		<div class="card" style="max-width: 800px;">
+			<h2>Export All</h2>
+			<p>Run all exporters at once:</p>
+			<p>
+				<button class="button button-primary wp2grav-export-btn" data-exporter="all">Export All</button>
+			</p>
+		</div>
+
+		<div class="card" style="max-width: 800px;">
+			<h2>Results</h2>
+			<div id="wp2grav-results">Ready to export.</div>
+		</div>
+	</div>
+	<?php
+}
+
+/**
+ * Handles the AJAX request to run a named exporter.
+ *
+ * Validates the nonce and user capability, dispatches to the appropriate
+ * export function, and returns a JSON success or error response.
+ */
+function wp2grav_ajax_run_export() {
+	check_ajax_referer( 'wp2grav_export_nonce' );
+
+	if ( ! current_user_can( 'manage_options' ) ) {
+		wp_send_json_error( array( 'message' => 'Permission denied.' ) );
+	}
+
+	$exporter = isset( $_POST['exporter'] ) ? sanitize_text_field( wp_unslash( $_POST['exporter'] ) ) : '';
+
+	$exporters = array(
+		'roles'      => 'wp2grav_export_roles',
+		'users'      => 'wp2grav_export_users',
+		'posts'      => 'wp2grav_export_posts',
+		'post_types' => 'wp2grav_export_post_types',
+		'site'       => 'wp2grav_export_site',
+		'all'        => 'wp2grav_export_all',
+	);
+
+	if ( ! isset( $exporters[ $exporter ] ) ) {
+		wp_send_json_error( array( 'message' => 'Invalid exporter: ' . $exporter ) );
+	}
+
+	try {
+		call_user_func( $exporters[ $exporter ] );
+		wp_send_json_success( array( 'message' => ucfirst( str_replace( '_', ' ', $exporter ) ) . " export(s) completed successfully!\nOutput saved to: " . get_export_dir() ) );
+	} catch ( Exception $e ) {
+		wp_send_json_error( array( 'message' => $e->getMessage() ) );
+	}
+}
+
+/**
+ * Handles the AJAX request to delete a previous export directory.
+ *
+ * Validates the nonce, user capability, and folder name before
+ * recursively removing the directory.
+ */
+function wp2grav_ajax_delete_export() {
+	check_ajax_referer( 'wp2grav_export_nonce' );
+
+	if ( ! current_user_can( 'manage_options' ) ) {
+		wp_send_json_error( array( 'message' => 'Permission denied.' ) );
+	}
+
+	$folder = isset( $_POST['folder'] ) ? sanitize_text_field( wp_unslash( $_POST['folder'] ) ) : '';
+
+	// Only allow the known pattern to prevent path traversal.
+	if ( ! preg_match( '/^user-\d{8}$/', $folder ) ) {
+		wp_send_json_error( array( 'message' => 'Invalid folder name.' ) );
+	}
+
+	$target = WP_CONTENT_DIR . '/uploads/wp2grav-exports/' . $folder;
+
+	if ( ! is_dir( $target ) ) {
+		wp_send_json_error( array( 'message' => 'Directory not found.' ) );
+	}
+
+	if ( wp2grav_rmdir_recursive( $target ) ) {
+		wp_send_json_success( array( 'message' => 'Deleted export: ' . $folder ) );
+	} else {
+		wp_send_json_error( array( 'message' => 'Failed to delete: ' . $folder ) );
+	}
+}
+
+/**
+ * Recursively deletes a directory and all its contents.
+ *
+ * @param string $dir Absolute path to the directory to remove.
+ * @return bool True on success, false on failure.
+ */
+function wp2grav_rmdir_recursive( $dir ) {
+	$items = array_diff( scandir( $dir ), array( '.', '..' ) );
+	foreach ( $items as $item ) {
+		$path = $dir . '/' . $item;
+		if ( is_dir( $path ) ) {
+			wp2grav_rmdir_recursive( $path );
+		} else {
+			wp_delete_file( $path );
+		}
+	}
+	return rmdir( $dir );
 }
 
 /**

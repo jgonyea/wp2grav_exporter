@@ -7,38 +7,59 @@
  */
 
 /**
- * Exports all wp2grav plugins found in plugins directory.
+ * Exports all wp2grav content by running each individual exporter found in the plugins directory.
+ *
+ * @throws Exception If any individual exporter fails.
  */
 function wp2grav_export_all() {
-	WP_CLI::line( 'Exporting all available content' );
+	// Find all exporter plugins. Assumes filename uses the wp2grav-* convention.
+	$plugin_dir     = plugin_dir_path( __FILE__ );
+	$export_plugins = glob( $plugin_dir . 'wp2grav-*.php' );
+	$completed      = array();
 
-	$options = array(
-		'return'     => true,   // Return 'STDOUT'; use 'all' for full object.
-		'launch'     => false,  // Reuse the current process.
-		'exit_error' => true,   // Halt script execution on error.
-	);
+	if ( defined( 'WP_CLI' ) && WP_CLI ) {
+		WP_CLI::line( 'Exporting all available content' );
 
-	// Find all exporter plugins.  Assumes filename is using the wp2grav-* command.
-	$plugin_dir        = plugin_dir_path( __FILE__ );
-	$export_plugins    = glob( $plugin_dir . 'wp2grav-*' );
-	$plugins_completed = '';
+		$options = array(
+			'return'     => true,
+			'launch'     => false,
+			'exit_error' => true,
+		);
+	}
 
 	foreach ( $export_plugins as $exporter ) {
 		$command = substr( $exporter, strlen( $plugin_dir ) );
-		// Drops '.php' extension.
-		$command = substr( $command, 0, ( strlen( $command ) - 4 ) );
+		$command = substr( $command, 0, -4 );
 
 		if ( 'wp2grav-all' !== $command ) {
-			WP_CLI::runcommand( $command, $options );
-			$plugins_completed .= substr( $command, 8 ) . ', ';
+			if ( defined( 'WP_CLI' ) && WP_CLI ) {
+				WP_CLI::runcommand( $command, $options );
+			} else {
+				$command = convert_command( $command );
+				call_user_func( $command );
+			}
+			$completed[] = substr( $command, 8 );
 		}
 	}
-	$plugins_completed = WP_CLI::colorize( '%M' . substr( $plugins_completed, 0, -2 ) . '%n' );
+	if ( defined( 'WP_CLI' ) && WP_CLI ) {
+		$plugins_completed = WP_CLI::colorize( '%M' . implode( ', ', $completed ) . '%n' );
+		WP_CLI::line();
+		WP_CLI::line( WP_CLI::colorize( '%GSuccess:%n Completed ' . count( $completed ) . ' exporter plugins (' . $plugins_completed . ')' ) );
+		WP_CLI::line( 'Exported content can be found at ' . get_export_dir() );
+		WP_CLI::line( WP_CLI::colorize( '%CNote: After copying the exported content to Grav, you must navigate to the `wordpress-exporter-helper` plugin and run `composer install` %n' ) );
+	}
+}
 
-	WP_CLI::line();
-	WP_CLI::line( WP_CLI::colorize( '%GSuccess:%n Completed ' . ( count( $export_plugins ) - 1 ) . ' exporter plugins (' . $plugins_completed . ')' ) );
-
-	$export_dir = WP_CONTENT_DIR . '/uploads/wp2grav-exports/user-' . gmdate( 'Ymd' ) . '/';
-	WP_CLI::line( 'Exported content can be found at ' . $export_dir );
-	WP_CLI::line( WP_CLI::colorize( '%CNote: After copying the exported content to Grav, you must navigate to the `wordpress-exporter-helper` plugin and run `composer install` %n' ) );
+/**
+ * Converts a WP-CLI plugin name to the actual function call.
+ *
+ * @param string $command WP-CLI command name (e.g. 'wp2grav-roles').
+ * @return string PHP function name for the exporter (e.g. 'wp2grav_export_roles').
+ */
+function convert_command( $command ) {
+	$new_command      = 'wp2grav_export_';
+	$exploded_command = explode( '-', $command );
+	$exploded_command = array_slice( $exploded_command, 1 );
+	$imploded_command = implode( '_', $exploded_command );
+	return $new_command . $imploded_command;
 }

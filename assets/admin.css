@@ -1,0 +1,7 @@
+#wp2grav-results {
+	background: #f0f0f1;
+	padding: 10px;
+	min-height: 60px;
+	font-family: monospace;
+	white-space: pre-wrap;
+}
