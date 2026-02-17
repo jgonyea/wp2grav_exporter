@@ -25,7 +25,7 @@ if ( ! isset( $wp_filesystem ) ) {
  * [--id=<POST_ID>]
  * : Exports a single page of id.
  */
-function wp2grav_export_posts( $args, $assoc_args ) {
+function wp2grav_export_posts( $args = array(), $assoc_args = array() ) {
 	if ( defined( 'WP_CLI' ) && WP_CLI ) {
 		WP_CLI::line( WP_CLI::colorize( '%YBeginning posts export%n ' ) );
 	}
@@ -40,8 +40,10 @@ function wp2grav_export_posts( $args, $assoc_args ) {
 	! wp_mkdir_p( $pages_export_folder ) ||
 	! wp_mkdir_p( $files_export_folder )
 	) {
-		WP_CLI::error( 'Pages: Could not create export folders ' );
-		die();
+		if ( defined( 'WP_CLI' ) && WP_CLI ) {
+			WP_CLI::error( 'Pages: Could not create export folders ' );
+		}
+		throw new Exception( 'Pages: Could not create export folders' );
 	}
 
 	// Posts to export.
@@ -67,7 +69,11 @@ function wp2grav_export_posts( $args, $assoc_args ) {
 	}
 
 	// Creates a new progress bar.
-	$progress_type = \WP_CLI\Utils\make_progress_bar( ' |- Generating ' . count( $posts ) . ' posts.', count( $posts ), $interval = 100 );
+	if ( defined( 'WP_CLI' ) && WP_CLI ) {
+		$progress_type = \WP_CLI\Utils\make_progress_bar( ' |- Generating ' . count( $posts ) . ' posts.', count( $posts ), $interval = 100 );
+	} else {
+		$progress_type = new Wp2grav_Noop_Progress();
+	}
 
 	// Iterate through posts.
 	foreach ( $posts as $post ) {
@@ -78,7 +84,9 @@ function wp2grav_export_posts( $args, $assoc_args ) {
 	}
 	$progress_type->finish();
 
-	WP_CLI::success( 'Saved Complete!  ' . count( $posts ) . " posts exported to $pages_export_folder" );
+	if ( defined( 'WP_CLI' ) && WP_CLI ) {
+		WP_CLI::success( 'Saved Complete!  ' . count( $posts ) . " posts exported to $pages_export_folder" );
+	}
 }
 
 /**

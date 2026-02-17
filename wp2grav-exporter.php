@@ -17,77 +17,32 @@
  */
 require 'vendor/autoload.php';
 
-add_action( 'admin_menu', 'wp2grav_admin_menu' );
+/**
+ * No-op progress bar for non-CLI contexts.
+ */
+class Wp2grav_Noop_Progress {
+	/**
+	 * No-op tick.
+	 */
+	public function tick() {}
 
-// Create custom admin menu.
-function wp2grav_admin_menu() {
-	add_submenu_page(
-		'tools.php',							// parent slug
-		'WP2Grav Expoter Main Page',        // Page title
-		'WP2Grav Exporter',              // Menu title
-		'manage_options',           // Capability (who can access)
-		'wp2grav-exporter',           // Menu slug
-		'wp2grav_admin_page_callback',    // Function to display page content
-		15,								// position
-	);
+	/**
+	 * No-op finish.
+	 */
+	public function finish() {}
 }
 
-function wp2grav_admin_page_callback() {
-	?>
-		<form action="<?php echo esc_url( admin_url( 'export-personal-data.php' ) ); ?>" method="post" class="wp-privacy-request-form">
-		<h2><?php esc_html_e( 'WP2Grav Expoter' ); ?></h2>
-		<div class="wp-wp2grav-data-request" style="width: 75%;">
-			<label for="bo0ofw4v5pk" class="block text-sm font-medium mb-1 text-foreground/90">Please select what WordPress items you would like to export</label>
-			<div class="space-y-2">
-				<div class="flex items-center gap-2">
-					<input id="bo0ofw4v5pk-4" type="checkbox" name="bo0ofw4v5pk[]">
-					<label for="bo0ofw4v5pk-4">-- All --</label>
-				</div>
-				<div class="flex items-center gap-2">
-					<input id="bo0ofw4v5pk-0" type="checkbox" name="bo0ofw4v5pk[]">
-					<label for="bo0ofw4v5pk-0">Users</label>
-				</div>
-				<div class="flex items-center gap-2">
-					<input id="bo0ofw4v5pk-1" type="checkbox" name="bo0ofw4v5pk[]">
-					<label for="bo0ofw4v5pk-1">Roles</label>
-				</div>
-				<div class="flex items-center gap-2">
-					<input id="bo0ofw4v5pk-2" type="checkbox" name="bo0ofw4v5pk[]">
-					<label for="bo0ofw4v5pk-2">Posts</label>
-				</div>
-				<div class="flex items-center gap-2">
-						<input id="bo0ofw4v5pk-3" type="checkbox" name="bo0ofw4v5pk[]">
-						<label for="bo0ofw4v5pk-3">Post Types</label>
-				</div>
-				<div class="flex items-center gap-2">
-					<input id="bo0ofw4v5pk-4" type="checkbox" name="bo0ofw4v5pk[]">
-					<label for="bo0ofw4v5pk-4">Site Configuration</label>
-				</div>
-			</div>
+// Load plugin files for both CLI and admin contexts.
+$plugin_dir = plugin_dir_path( __FILE__ ) . 'plugins';
+$files      = glob( $plugin_dir . '/wp2grav-*.php' );
 
-			<p class="submit">
-				<?php submit_button( __( 'Send Request' ), 'secondary', 'submit', false ); ?>
-			</p>
-		</div>
-		<?php wp_nonce_field( 'wp2grav-data-request' ); ?>
-		<input type="hidden" name="action" value="add_export_personal_data_request" />
-		<input type="hidden" name="type_of_action" value="export_personal_data" />
-	</form>
-	<hr />
-
-	<?php
+foreach ( $files as $file ) {
+	require_once $file;
 }
 
+// Register WP-CLI commands when in CLI context.
 if ( defined( 'WP_CLI' ) && WP_CLI ) {
-	$plugin_dir = plugin_dir_path( __FILE__ ) . 'plugins';
-	// Load plugins.
-
-	$files = glob( $plugin_dir . '/wp2grav-*.php' );
-
 	foreach ( $files as $file ) {
-		// Import plugins.
-		require_once $file;
-
 		// Derive expected function names from filenames.
 		$plugin_name          = substr( $file, strlen( $plugin_dir ) + 1 );
 		$plugin_name          = substr( $plugin_name, 0, -4 );
@@ -97,6 +52,132 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
 
 		// Register commands with wp-cli.
 		WP_CLI::add_command( $plugin_name, 'wp2grav_export_' . $plugin_name_imploded );
+	}
+}
+
+add_action( 'admin_menu', 'wp2grav_admin_menu' );
+add_action( 'admin_enqueue_scripts', 'wp2grav_enqueue_admin_assets' );
+
+/**
+ * Enqueues CSS and JS assets for the WP2Grav admin page.
+ *
+ * Loads only on the plugin's own admin page and passes the security nonce
+ * to JavaScript via wp_localize_script.
+ *
+ * @param string $hook The current admin page hook suffix.
+ */
+function wp2grav_enqueue_admin_assets( $hook ) {
+	if ( 'tools_page_wp2grav-exporter' !== $hook ) {
+		return;
+	}
+	$plugin_url = plugin_dir_url( __FILE__ );
+	wp_enqueue_style( 'wp2grav-admin', $plugin_url . 'assets/admin.css', array(), '1.0.0' );
+	wp_enqueue_script( 'wp2grav-admin', $plugin_url . 'assets/admin.js', array(), '1.0.0', true );
+	wp_localize_script(
+		'wp2grav-admin',
+		'wp2gravAdmin',
+		array(
+			'nonce' => wp_create_nonce( 'wp2grav_export_nonce' ),
+		)
+	);
+}
+
+/**
+ * Registers the WP2Grav Exporter submenu page under the Tools menu.
+ */
+function wp2grav_admin_menu() {
+	add_submenu_page(
+		'tools.php',
+		'WP2Grav Exporter Main Page',
+		'WP2Grav Exporter',
+		'manage_options',
+		'wp2grav-exporter',
+		'wp2grav_admin_page_callback',
+		15
+	);
+}
+
+/**
+ * Renders the WP2Grav Exporter admin page.
+ *
+ * Outputs the export directory, individual exporter buttons, and a results
+ * area that is populated via AJAX after each export action.
+ */
+function wp2grav_admin_page_callback() {
+	$export_dir = get_export_dir();
+	?>
+	<div class="wrap">
+		<h1>WP2Grav Exporter</h1>
+		<p>Export your WordPress content for use in a GravCMS instance.</p>
+
+		<div class="card" style="max-width: 800px;">
+			<h2>Export Directory</h2>
+			<p><code><?php echo esc_html( $export_dir ); ?></code></p>
+		</div>
+
+		<div class="card" style="max-width: 800px;">
+			<h2>Individual Plugin Exports</h2>
+			<p>Run each exporter individually:</p>
+			<p>
+				<button class="button button-secondary wp2grav-export-btn" data-exporter="posts">Export Posts</button>
+				<button class="button button-secondary wp2grav-export-btn" data-exporter="post_types">Export Post Types</button>
+				<button class="button button-secondary wp2grav-export-btn" data-exporter="users">Export Users</button>
+				<button class="button button-secondary wp2grav-export-btn" data-exporter="roles">Export User Roles</button>
+				<button class="button button-secondary wp2grav-export-btn" data-exporter="site">Export Site Configuration</button>
+			</p>
+		</div>
+
+		<div class="card" style="max-width: 800px;">
+			<h2>Export All</h2>
+			<p>Run all exporters at once:</p>
+			<p>
+				<button class="button button-primary wp2grav-export-btn" data-exporter="all">Export All</button>
+			</p>
+		</div>
+
+		<div class="card" style="max-width: 800px;">
+			<h2>Results</h2>
+			<div id="wp2grav-results">Ready to export.</div>
+		</div>
+	</div>
+	<?php
+}
+
+add_action( 'wp_ajax_wp2grav_run_export', 'wp2grav_ajax_run_export' );
+
+/**
+ * Handles the AJAX request to run a named exporter.
+ *
+ * Validates the nonce and user capability, dispatches to the appropriate
+ * export function, and returns a JSON success or error response.
+ */
+function wp2grav_ajax_run_export() {
+	check_ajax_referer( 'wp2grav_export_nonce' );
+
+	if ( ! current_user_can( 'manage_options' ) ) {
+		wp_send_json_error( array( 'message' => 'Permission denied.' ) );
+	}
+
+	$exporter = isset( $_POST['exporter'] ) ? sanitize_text_field( wp_unslash( $_POST['exporter'] ) ) : '';
+
+	$exporters = array(
+		'roles'      => 'wp2grav_export_roles',
+		'users'      => 'wp2grav_export_users',
+		'posts'      => 'wp2grav_export_posts',
+		'post_types' => 'wp2grav_export_post_types',
+		'site'       => 'wp2grav_export_site',
+		'all'        => 'wp2grav_export_all',
+	);
+
+	if ( ! isset( $exporters[ $exporter ] ) ) {
+		wp_send_json_error( array( 'message' => 'Invalid exporter: ' . $exporter ) );
+	}
+
+	try {
+		call_user_func( $exporters[ $exporter ] );
+		wp_send_json_success( array( 'message' => ucfirst( str_replace( '_', ' ', $exporter ) ) . " export(s) completed successfully!\nOutput saved to: " . get_export_dir() ) );
+	} catch ( Exception $e ) {
+		wp_send_json_error( array( 'message' => $e->getMessage() ) );
 	}
 }
 
@@ -185,4 +266,3 @@ function wp2grav_find_posts_of_type( $type = 'post' ) {
 function get_export_dir() {
 	return WP_CONTENT_DIR . '/uploads/wp2grav-exports/user-' . gmdate( 'Ymd' ) . '/';
 }
-	

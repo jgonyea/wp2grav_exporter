@@ -28,18 +28,27 @@ function wp2grav_export_users() {
 
 	$accounts_dir = get_export_dir() . 'accounts/';
 	if ( ! wp_mkdir_p( $accounts_dir ) ) {
-		WP_CLI::error( "Could not create accounts export folder at $accounts_dir" );
-		die();
+		if ( defined( 'WP_CLI' ) && WP_CLI ) {
+			WP_CLI::error( "Could not create accounts export folder at $accounts_dir" );
+		}
+		throw new Exception( "Could not create accounts export folder at $accounts_dir" );
 	}
 
 	// Find all users.
 	$users = get_users();
 	if ( ! $users ) {
-		WP_CLI::error( 'No users found.  Stopping export', $exit = true );
+		if ( defined( 'WP_CLI' ) && WP_CLI ) {
+			WP_CLI::error( 'No users found.  Stopping export', $exit = true );
+		}
+		throw new Exception( 'No users found.  Stopping export' );
 	}
 
 	// Creates a new progress bar.
-	$progress = \WP_CLI\Utils\make_progress_bar( ' |- Generating ' . count( $users ) . ' user accounts', count( $users ), $interval = 100 );
+	if ( defined( 'WP_CLI' ) && WP_CLI ) {
+		$progress = \WP_CLI\Utils\make_progress_bar( ' |- Generating ' . count( $users ) . ' user accounts', count( $users ), $interval = 100 );
+	} else {
+		$progress = new Wp2grav_Noop_Progress();
+	}
 
 	foreach ( $users as $user ) {
 		$progress->tick();
@@ -72,15 +81,18 @@ function wp2grav_export_users() {
 		$account                     = Yaml::dump( $account_content, 20, 4 );
 		$account                    .= 'login_attempts: {  }';
 		$filename                    = convert_username_wp_to_grav( $user );
-		try {
-			if ( ! $wp_filesystem->put_contents( $accounts_dir . $filename . '.yaml', $account ) ) {
-				throw new Exception( 'Could not save ' . $filename . '.yaml export file' );
+
+		if ( ! $wp_filesystem->put_contents( $accounts_dir . $filename . '.yaml', $account ) ) {
+			if ( defined( 'WP_CLI' ) && WP_CLI ) {
+				WP_CLI::error( 'Could not save ' . $filename . '.yaml export file' );
 			}
-		} catch ( Exception $e ) {
-			WP_CLI::error( $e->getMessage(), $exit = true );
+			throw new Exception( 'Could not save ' . $filename . '.yaml export file' );
 		}
 	}
-	WP_CLI::success( 'Saved Complete!  ' . count( $users ) . " user accounts exported to $accounts_dir" );
+
+	if ( defined( 'WP_CLI' ) && WP_CLI ) {
+		WP_CLI::success( 'Saved Complete!  ' . count( $users ) . " user accounts exported to $accounts_dir" );
+	}
 	$progress->finish();
 }
 

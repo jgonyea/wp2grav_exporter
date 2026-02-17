@@ -35,8 +35,10 @@ function wp2grav_export_post_types() {
 		! wp_mkdir_p( $export_folder . $templates_export_folder ) ||
 		! wp_mkdir_p( $export_folder . $blueprints_export_folder )
 	) {
-		WP_CLI::error( 'Post Types: Could not create export folders ' );
-		die();
+		if ( defined( 'WP_CLI' ) && WP_CLI ) {
+			WP_CLI::error( 'Post Types: Could not create export folders ' );
+		}
+		throw new Exception( 'Post Types: Could not create export folders' );
 	}
 
 	// Write additional static plugin component files.
@@ -62,11 +64,18 @@ function wp2grav_export_post_types() {
 	unset( $post_types['attachment'] );
 
 	if ( ! $post_types ) {
-		WP_CLI::error( 'No post types found.  Stopping export', $exit = true );
+		if ( defined( 'WP_CLI' ) && WP_CLI ) {
+			WP_CLI::error( 'No post types found.  Stopping export', $exit = true );
+		}
+		throw new Exception( 'No post types found.  Stopping export' );
 	}
 
 	// Creates a new progress bar.
-	$progress_type = \WP_CLI\Utils\make_progress_bar( ' |- Discovering ' . count( $post_types ) . ' post types', count( $post_types ), $interval = 100 );
+	if ( defined( 'WP_CLI' ) && WP_CLI ) {
+		$progress_type = \WP_CLI\Utils\make_progress_bar( ' |- Discovering ' . count( $post_types ) . ' post types', count( $post_types ), $interval = 100 );
+	} else {
+		$progress_type = new Wp2grav_Noop_Progress();
+	}
 
 	// Iterate through all post types.
 	foreach ( $post_types as $post_type ) {
@@ -75,7 +84,11 @@ function wp2grav_export_post_types() {
 		$posts = wp2grav_find_posts_of_type( $post_type );
 
 		// Creates a new progress bar.
-		$progress_posts = \WP_CLI\Utils\make_progress_bar( ' |- Parsing ' . count( $posts ) . ' posts from post_type: ' . $post_type, count( $posts ), $interval = 100 );
+		if ( defined( 'WP_CLI' ) && WP_CLI ) {
+			$progress_posts = \WP_CLI\Utils\make_progress_bar( ' |- Parsing ' . count( $posts ) . ' posts from post_type: ' . $post_type, count( $posts ), $interval = 100 );
+		} else {
+			$progress_posts = new Wp2grav_Noop_Progress();
+		}
 
 		$blueprint_component = dirname( $export_plugins_dir ) . '/grav_components/contentType_blueprint.yaml';
 		$blueprint           = Yaml::parseFile( $blueprint_component );
@@ -206,7 +219,9 @@ function wp2grav_export_post_types() {
 
 	$progress_type->finish();
 
-	WP_CLI::success( 'Saved Complete!  ' . count( $post_types ) . " post types exported to $blueprints_export_folder" );
+	if ( defined( 'WP_CLI' ) && WP_CLI ) {
+		WP_CLI::success( 'Saved Complete!  ' . count( $post_types ) . " post types exported to $blueprints_export_folder" );
+	}
 }
 
 

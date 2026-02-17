@@ -33,8 +33,10 @@ function wp2grav_export_site() {
 		! wp_mkdir_p( $export_dir ) ||
 		! wp_mkdir_p( $config_export_dir )
 	) {
-		WP_CLI::error( 'Error generating site.yaml: Could not create export folders ' );
-		die();
+		if ( defined( 'WP_CLI' ) && WP_CLI ) {
+			WP_CLI::error( 'Error generating site.yaml: Could not create export folders' );
+		}
+		throw new Exception( 'Error generating site.yaml: Could not create export folders' );
 	}
 
 	$author_email = get_bloginfo( 'admin_email' );
