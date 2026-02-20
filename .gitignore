@@ -1,5 +1,3 @@
-vendor
-
 # PHPUnit Test
 .phpunit.result.cache
 
