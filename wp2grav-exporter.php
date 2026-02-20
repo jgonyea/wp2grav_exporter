@@ -3,7 +3,7 @@
  * Plugin Name: WP2Grav Exporter
  * Plugin URI:  https://www.github.com/jgonyea/wp2grav_exporter
  * Description: Converts WordPress content for use in a GravCMS instance.
- * Version:     0.4.1
+ * Version:     0.4.2
  * Author:      Jeremy Gonyea
  * Author URI:  https://www.gonyea.io
  * License:     MIT
@@ -16,27 +16,13 @@
  * Loads composer dependencies.
  */
 require 'vendor/autoload.php';
+require_once plugin_dir_path( __FILE__ ) . 'classes/class-wp2grav-noop-progress.php';
 
 // Custom plugin actions.
 add_action( 'admin_menu', 'wp2grav_admin_menu' );
 add_action( 'admin_enqueue_scripts', 'wp2grav_enqueue_admin_assets' );
 add_action( 'wp_ajax_wp2grav_run_export', 'wp2grav_ajax_run_export' );
 add_action( 'wp_ajax_wp2grav_delete_export', 'wp2grav_ajax_delete_export' );
-
-/**
- * No-op progress bar for non-CLI contexts.
- */
-class Wp2grav_Noop_Progress {
-	/**
-	 * No-op tick.
-	 */
-	public function tick() {}
-
-	/**
-	 * No-op finish.
-	 */
-	public function finish() {}
-}
 
 // Load plugin files for both CLI and admin contexts.
 $plugin_dir = plugin_dir_path( __FILE__ ) . 'plugins';

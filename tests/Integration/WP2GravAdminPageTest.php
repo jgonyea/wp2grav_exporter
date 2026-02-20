@@ -148,7 +148,6 @@ class WP2GravAdminPageTest extends WP_Ajax_UnitTestCase {
 			$this->_handleAjax( 'wp2grav_run_export' );
 		} catch ( WPAjaxDieContinueException $e ) {
 			// Expected since AJAX call was cancelled by the AJAX handler.
-
 		}
 
 		$response = json_decode( $this->_last_response, true );
@@ -167,7 +166,6 @@ class WP2GravAdminPageTest extends WP_Ajax_UnitTestCase {
 			$this->_handleAjax( 'wp2grav_run_export' );
 		} catch ( WPAjaxDieContinueException $e ) {
 			// Expected since AJAX call was cancelled by the AJAX handler.
-
 		}
 
 		$response = json_decode( $this->_last_response, true );
@@ -189,7 +187,6 @@ class WP2GravAdminPageTest extends WP_Ajax_UnitTestCase {
 			$this->_handleAjax( 'wp2grav_run_export' );
 		} catch ( WPAjaxDieContinueException $e ) {
 			// Expected since AJAX call was cancelled by the AJAX handler.
-
 		}
 
 		$response = json_decode( $this->_last_response, true );
@@ -248,7 +245,6 @@ class WP2GravAdminPageTest extends WP_Ajax_UnitTestCase {
 			$this->_handleAjax( 'wp2grav_delete_export' );
 		} catch ( WPAjaxDieContinueException $e ) {
 			// Expected since AJAX call was cancelled by the AJAX handler.
-
 		}
 
 		$response = json_decode( $this->_last_response, true );
