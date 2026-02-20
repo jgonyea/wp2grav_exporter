@@ -75,8 +75,8 @@ function wp2grav_enqueue_admin_assets( $hook ) {
 		return;
 	}
 	$plugin_url = plugin_dir_url( __FILE__ );
-	wp_enqueue_style( 'wp2grav-admin', $plugin_url . 'assets/admin.css', array(), '1.0.0' );
-	wp_enqueue_script( 'wp2grav-admin', $plugin_url . 'assets/admin.js', array(), '1.0.0', true );
+	wp_enqueue_style( 'wp2grav-admin', $plugin_url . 'assets/admin/admin.css', array(), '1.0.0' );
+	wp_enqueue_script( 'wp2grav-admin', $plugin_url . 'assets/admin/admin.js', array(), '1.0.0', true );
 	wp_localize_script(
 		'wp2grav-admin',
 		'wp2gravAdmin',
@@ -104,62 +104,12 @@ function wp2grav_admin_menu() {
 /**
  * Renders the WP2Grav Exporter admin page.
  *
- * Outputs the export directory, individual exporter buttons, and a results
+ * Outputs the export directory, exporter buttons, and a results
  * area that is populated via AJAX after each export action.
  */
 function wp2grav_admin_page_callback() {
 	$export_dir = get_export_dir();
-	?>
-	<div class="wrap">
-		<h1>WP2Grav Exporter</h1>
-		<p>Export your WordPress content for use in a GravCMS instance.</p>
-
-		<div class="card" style="max-width: 800px;">
-			<h2>Export Directory</h2>
-			<p><code><?php echo esc_html( $export_dir ); ?></code></p>
-			<?php
-			$exports_base = dirname( rtrim( $export_dir, '/' ) );
-			if ( is_dir( $exports_base ) ) {
-				$siblings = glob( $exports_base . '/user-*', GLOB_ONLYDIR );
-				if ( ! empty( $siblings ) ) {
-					rsort( $siblings );
-					echo '<p><strong>Previous exports:</strong></p><ul>';
-					foreach ( $siblings as $sibling ) {
-						$label = basename( $sibling );
-						echo '<li><code>' . esc_html( $label ) . '</code> <button class="button button-small wp2grav-delete-btn" data-folder="' . esc_attr( $label ) . '">Delete</button></li>';
-					}
-					echo '</ul>';
-				}
-			}
-			?>
-		</div>
-
-		<div class="card" style="max-width: 800px;">
-			<h2>Individual Plugin Exports</h2>
-			<p>Run each exporter individually:</p>
-			<p>
-				<button class="button button-secondary wp2grav-export-btn" data-exporter="posts">Export Posts</button>
-				<button class="button button-secondary wp2grav-export-btn" data-exporter="post_types">Export Post Types</button>
-				<button class="button button-secondary wp2grav-export-btn" data-exporter="users">Export Users</button>
-				<button class="button button-secondary wp2grav-export-btn" data-exporter="roles">Export User Roles</button>
-				<button class="button button-secondary wp2grav-export-btn" data-exporter="site">Export Site Configuration</button>
-			</p>
-		</div>
-
-		<div class="card" style="max-width: 800px;">
-			<h2>Export All</h2>
-			<p>Run all exporters at once:</p>
-			<p>
-				<button class="button button-primary wp2grav-export-btn" data-exporter="all">Export All</button>
-			</p>
-		</div>
-
-		<div class="card" style="max-width: 800px;">
-			<h2>Results</h2>
-			<div id="wp2grav-results">Ready to export.</div>
-		</div>
-	</div>
-	<?php
+	include plugin_dir_path( __FILE__ ) . 'assets/admin/admin-page.php';
 }
 
 /**
@@ -248,7 +198,9 @@ function wp2grav_rmdir_recursive( $dir ) {
 			wp_delete_file( $path );
 		}
 	}
-	return rmdir( $dir );
+
+	$action = $GLOBALS['wp_filesystem']->rmdir( $dir );
+	return $action;
 }
 
 /**

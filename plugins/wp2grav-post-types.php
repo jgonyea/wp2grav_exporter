@@ -30,7 +30,7 @@ function wp2grav_export_post_types() {
 	$plugin_export_folder     = 'plugins/wordpress-exporter-helper/';
 	$templates_export_folder  = $plugin_export_folder . 'templates/';
 	$blueprints_export_folder = $plugin_export_folder . 'blueprints/';
-	$vendor_export_folder 	  = $plugin_export_folder . 'vendor/';
+	$vendor_export_folder     = $plugin_export_folder . 'vendor/';
 
 	if ( ! wp_mkdir_p( $export_folder ) ||
 		! wp_mkdir_p( $export_folder . $templates_export_folder ) ||
@@ -145,17 +145,17 @@ function wp2grav_export_post_types() {
 
 				case 'comments':
 					$new_fields['header.wp.post.comments'] = array(
-						'help'  => 'WP Post comments',
-						'label' => $field_type,
-						'type'  => 'toggle',
+						'help'      => 'WP Post comments',
+						'label'     => $field_type,
+						'type'      => 'toggle',
 						'highlight' => 1,
-						'default' => 1,
-						'options' => array(
+						'default'   => 1,
+						'options'   => array(
 							0 => 'PLUGIN_ADMIN.DISABLED',
-							1 => 'PLUGIN_ADMIN.ENABLED'
+							1 => 'PLUGIN_ADMIN.ENABLED',
 						),
-						'validate' => array(
-							'type' => 'bool'
+						'validate'  => array(
+							'type' => 'bool',
 						),
 					);
 					break;

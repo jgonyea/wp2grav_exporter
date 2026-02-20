@@ -31,7 +31,7 @@ function wp2grav_export_users() {
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
 			WP_CLI::error( "Could not create accounts export folder at $accounts_dir" );
 		}
-		throw new Exception( "Could not create accounts export folder at $accounts_dir" );
+		throw new Exception( esc_html( "Could not create accounts export folder at $accounts_dir" ) );
 	}
 
 	// Find all users.
@@ -86,7 +86,7 @@ function wp2grav_export_users() {
 			if ( defined( 'WP_CLI' ) && WP_CLI ) {
 				WP_CLI::error( 'Could not save ' . $filename . '.yaml export file' );
 			}
-			throw new Exception( 'Could not save ' . $filename . '.yaml export file' );
+			throw new Exception( esc_html( 'Could not save ' . $filename . '.yaml export file' ) );
 		}
 	}
 
