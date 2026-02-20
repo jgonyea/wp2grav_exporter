@@ -46,7 +46,6 @@ function wp2grav_export_all() {
 		WP_CLI::line();
 		WP_CLI::line( WP_CLI::colorize( '%GSuccess:%n Completed ' . count( $completed ) . ' exporter plugins (' . $plugins_completed . ')' ) );
 		WP_CLI::line( 'Exported content can be found at ' . get_export_dir() );
-		WP_CLI::line( WP_CLI::colorize( '%CNote: After copying the exported content to Grav, you must navigate to the `wordpress-exporter-helper` plugin and run `composer install` %n' ) );
 	}
 }
 
