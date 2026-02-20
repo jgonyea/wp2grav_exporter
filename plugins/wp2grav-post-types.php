@@ -30,10 +30,13 @@ function wp2grav_export_post_types() {
 	$plugin_export_folder     = 'plugins/wordpress-exporter-helper/';
 	$templates_export_folder  = $plugin_export_folder . 'templates/';
 	$blueprints_export_folder = $plugin_export_folder . 'blueprints/';
+	$vendor_export_folder 	  = $plugin_export_folder . 'vendor/';
 
 	if ( ! wp_mkdir_p( $export_folder ) ||
 		! wp_mkdir_p( $export_folder . $templates_export_folder ) ||
-		! wp_mkdir_p( $export_folder . $blueprints_export_folder )
+		! wp_mkdir_p( $export_folder . $blueprints_export_folder ) ||
+		! wp_mkdir_p( $export_folder . $plugin_export_folder . 'vendor' )
+
 	) {
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
 			WP_CLI::error( 'Post Types: Could not create export folders ' );
@@ -58,6 +61,12 @@ function wp2grav_export_post_types() {
 	foreach ( $plugin_files as $plugin_file ) {
 		copy( $plugin_components_files_path . $plugin_file, $export_folder . $plugin_export_folder . $plugin_file );
 	}
+
+	// Pre-install composer files for Grav plugin.
+	copy_dir(
+		$plugin_components_files_path . 'vendor',
+		$export_folder . $vendor_export_folder
+	);
 
 	// Find all custom post_types.
 	$post_types = get_post_types( array( 'public' => true ) );
@@ -135,9 +144,20 @@ function wp2grav_export_post_types() {
 					break;
 
 				case 'comments':
-					// Grav has a paid comments plugin, but exporting data to it is currently unsupported by
-					// this post-types exporter.
-					// See https://github.com/jgonyea/wp2grav_exporter/issues/27 for current status.
+					$new_fields['header.wp.post.comments'] = array(
+						'help'  => 'WP Post comments',
+						'label' => $field_type,
+						'type'  => 'toggle',
+						'highlight' => 1,
+						'default' => 1,
+						'options' => array(
+							0 => 'PLUGIN_ADMIN.DISABLED',
+							1 => 'PLUGIN_ADMIN.ENABLED'
+						),
+						'validate' => array(
+							'type' => 'bool'
+						),
+					);
 					break;
 
 				case 'editor':
@@ -174,9 +194,7 @@ function wp2grav_export_post_types() {
 					break;
 
 				case 'revisions':
-					// Grav has a paid revisions plugin, but exporting data to it is currently unsupported by
-					// this post-types exporter.
-					// See https://github.com/jgonyea/wp2grav_exporter/issues/27 for current status.
+					// Invidividual page types do not leverage a revisions field.
 					break;
 
 				case 'title':
