@@ -66,7 +66,7 @@ class WP2GravPostRevisionTest extends TestCase {
 	 */
 	private static function generate_post_with_revision(): void {
 		// Create the initial post.
-		$post_id = wp_insert_post(
+		$post_id       = wp_insert_post(
 			array(
 				'post_title'   => 'Revision Test Post',
 				'post_content' => 'Original post content.',
@@ -85,8 +85,8 @@ class WP2GravPostRevisionTest extends TestCase {
 		);
 
 		// Retrieve the most recent revision to determine the expected filename timestamp.
-		$revisions = wp_get_post_revisions( $post_id );
-		$revision  = reset( $revisions );
+		$revisions                = wp_get_post_revisions( $post_id );
+		$revision                 = reset( $revisions );
 		self::$revision_timestamp = gmdate( 'Ymd-His', strtotime( $revision->post_modified ) );
 	}
 

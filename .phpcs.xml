@@ -41,4 +41,9 @@
 			<property name="blank_line_check" value="true"/>
 		</properties>
 	</rule>
+
+	<!-- Allow empty catch statements in integration tests -->
+	<rule ref="Generic.CodeAnalysis.EmptyStatement.DetectedCatch">
+		<exclude-pattern>/tests/Integration/WP2GravAdminPageTest\.php</exclude-pattern>
+	</rule>
 </ruleset>

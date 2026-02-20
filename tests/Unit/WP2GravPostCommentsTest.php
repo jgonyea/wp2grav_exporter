@@ -74,7 +74,7 @@ class WP2GravPostCommentsTest extends TestCase {
 	 */
 	private static function generate_post_with_comments(): void {
 		// Create the post with comments open.
-		$post_id = wp_insert_post(
+		$post_id       = wp_insert_post(
 			array(
 				'post_title'     => 'Comments Test Post',
 				'post_content'   => 'Post content for comment testing.',

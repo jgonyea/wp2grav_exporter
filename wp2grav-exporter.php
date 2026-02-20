@@ -1,8 +1,8 @@
 <?php
 /**
- * Plugin Name: Grav Export
+ * Plugin Name: WP2Grav Exporter
  * Plugin URI:  https://www.github.com/jgonyea/wp2grav_exporter
- * Description: This plugin converts WP content for use in a GravCMS instance.
+ * Description: Converts WordPress content for use in a GravCMS instance.
  * Version:     0.4.1
  * Author:      Jeremy Gonyea
  * Author URI:  https://www.gonyea.io
@@ -192,10 +192,11 @@ function wp2grav_ajax_run_export() {
 
 	try {
 		call_user_func( $exporters[ $exporter ] );
-		wp_send_json_success( array( 'message' => ucfirst( str_replace( '_', ' ', $exporter ) ) . " export(s) completed successfully!\nOutput saved to: " . get_export_dir() ) );
 	} catch ( Exception $e ) {
 		wp_send_json_error( array( 'message' => $e->getMessage() ) );
+		return;
 	}
+	wp_send_json_success( array( 'message' => ucfirst( str_replace( '_', ' ', $exporter ) ) . " export(s) completed successfully!\nOutput saved to: " . get_export_dir() ) );
 }
 
 /**
