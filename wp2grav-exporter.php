@@ -3,7 +3,7 @@
  * Plugin Name: WP2Grav Exporter
  * Plugin URI:  https://www.github.com/jgonyea/wp2grav_exporter
  * Description: Converts WordPress content for use in a GravCMS instance.
- * Version:     0.4.2
+ * Version:     0.4.3
  * Author:      Jeremy Gonyea
  * Author URI:  https://www.gonyea.io
  * License:     MIT

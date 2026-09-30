@@ -1,5 +1,18 @@
+# v0.4.3
+#  09/30/2026
+1. [](#new)
+
+2. [](#improved)
+
+3. [](#bugfix)
+    * Dependency bumps:
+      * composer
+      * php_codesniffer
+      * phpcsutils
+      * wpcs
+
 # v0.4.2
-#  02/19.2026
+#  02/19/2026
 1. [](#new)
     * Admin gui to perform similar exports
 2. [](#improved)
